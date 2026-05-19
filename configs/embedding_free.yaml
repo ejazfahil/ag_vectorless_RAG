@@ -1,0 +1,28 @@
+# ============================================================
+# Embedding-Free RAG Pipeline — Maghakian et al. (EMNLP 2025)
+# ============================================================
+# Faithful implementation of Algorithm 1:
+# Quote extraction → Levenshtein anchoring → ±w window → answer
+
+pipeline:
+  name: "embedding_free"
+  description: "Embedding-Free RAG (Maghakian et al., EMNLP 2025)"
+
+  # Algorithm parameters
+  subdoc_words: 3000          # Words per sub-document (paper default)
+  window_size: 5              # ±w sentences around each anchor
+  summary_first_n_words: 5000 # Words used to generate document summary
+
+  # Two-LLM split (paper Section 2.4.2)
+  # Small/fast model for quote extraction, strong model for answer
+  quote_extraction:
+    model: "llama3.2:3b"      # Fast extractor (maps to paper's Gemini-Flash)
+    temperature: 0.0
+
+  answer_generation:
+    model: "llama3.2:3b"      # Strong synthesizer (maps to paper's GPT-4-Turbo)
+    temperature: 0.1
+    system_prompt: |
+      You are a precise research assistant. Answer questions using ONLY
+      the provided context passages. Cite specific passages for every claim.
+      If the context is insufficient, say so explicitly.

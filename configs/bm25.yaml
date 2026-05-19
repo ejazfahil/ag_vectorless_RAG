@@ -28,7 +28,7 @@ pipeline:
 
   # --- Generation ---
   generation:
-    model: "gpt-4o"
+    model: "llama3.2:3b"
     system_prompt: |
       You are a precise research assistant. Answer the question using ONLY
       the provided retrieved passages. Cite the source document and section

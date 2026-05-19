@@ -1,0 +1,10 @@
+{
+  "domain": "technical",
+  "total_questions": 3,
+  "question_types": {
+    "procedural": 3
+  },
+  "sources": [
+    "deterministic_technical"
+  ]
+}

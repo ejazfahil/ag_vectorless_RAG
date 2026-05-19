@@ -36,6 +36,7 @@ def get_pipelines(pipeline_filter: str | None = None):
     from src.pipelines.bm25_rag import BM25RAG
     from src.pipelines.agentic_rag import AgenticRAG
     from src.pipelines.hybrid_sota import HybridSoTARAG
+    from src.pipelines.embedding_free_rag import EmbeddingFreeRAG
 
     PIPELINE_CLASSES = {
         "pageindex": PageIndexRAG,
@@ -43,6 +44,7 @@ def get_pipelines(pipeline_filter: str | None = None):
         "bm25": BM25RAG,
         "agentic": AgenticRAG,
         "hybrid_sota": HybridSoTARAG,
+        "embedding_free": EmbeddingFreeRAG,
     }
 
     pipeline_configs = {
@@ -51,6 +53,7 @@ def get_pipelines(pipeline_filter: str | None = None):
         "bm25": "configs/bm25.yaml",
         "agentic": "configs/agentic.yaml",
         "hybrid_sota": "configs/hybrid_sota.yaml",
+        "embedding_free": "configs/embedding_free.yaml",
     }
 
     pipelines = []
@@ -89,7 +92,7 @@ Examples:
     )
     parser.add_argument(
         "--pipeline", type=str, default=None,
-        choices=["pageindex", "roaming", "bm25", "agentic", "hybrid_sota"],
+        choices=["pageindex", "roaming", "bm25", "agentic", "hybrid_sota", "embedding_free"],
         help="Run only a specific pipeline (default: all)",
     )
     parser.add_argument(

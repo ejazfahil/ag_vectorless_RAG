@@ -1,0 +1,10 @@
+{
+  "domain": "legal",
+  "total_questions": 30,
+  "question_types": {
+    "factual_descriptive": 30
+  },
+  "sources": [
+    "deterministic_legal"
+  ]
+}

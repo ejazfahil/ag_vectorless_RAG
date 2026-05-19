@@ -14,7 +14,7 @@ pipeline:
 
   # --- Retrieval ---
   retrieval:
-    model: "gpt-4o"
+    model: "llama3.2:3b"
     max_roaming_steps: 8            # max expand() calls per query
     initial_view: "outline"         # outline | first_page | summary
     expand_strategy: "selective"    # selective | greedy
@@ -26,7 +26,7 @@ pipeline:
 
   # --- Generation ---
   generation:
-    model: "gpt-4o"
+    model: "llama3.2:3b"
     system_prompt: |
       You are a research agent navigating a structured document. Use the
       provided tools to roam through the document hierarchy and find the

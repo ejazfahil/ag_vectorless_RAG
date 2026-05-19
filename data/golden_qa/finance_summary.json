@@ -1,0 +1,18 @@
+{
+  "domain": "finance",
+  "total_questions": 337,
+  "question_types": {
+    "factual_numeric": 113,
+    "factual": 40,
+    "trend_analysis": 24,
+    "factual_descriptive": 113,
+    "multi_hop": 46,
+    "reasoning": 1
+  },
+  "sources": [
+    "deterministic_numeric",
+    "deterministic_multihop",
+    "deterministic_structure",
+    "financebench"
+  ]
+}

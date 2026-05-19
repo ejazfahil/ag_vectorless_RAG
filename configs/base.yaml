@@ -8,8 +8,8 @@ project:
 
 # --- LLM Settings ---
 llm:
-  default_model: "gpt-4o"
-  judge_model: "gpt-4o"           # Separate model for LLM-as-a-Judge
+  default_model: "llama3.2:3b"
+  judge_model: "llama3.2:3b"           # Separate model for LLM-as-a-Judge
   temperature: 0.0                 # Deterministic for reproducibility
   max_tokens: 4096
   timeout: 120                     # seconds
@@ -41,7 +41,7 @@ evaluation:
       - context_precision
       - context_recall
   llm_judge:
-    model: "gpt-4o"
+    model: "llama3.2:3b"
     cot_prompting: true
     position_bias_mitigation: true
     calibration_set_size: 50
