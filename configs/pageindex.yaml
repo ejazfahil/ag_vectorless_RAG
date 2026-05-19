@@ -6,21 +6,21 @@ pipeline:
 
   # --- Ingestion ---
   ingestion:
-    model: "llama3.2:3b"
+    model: "qwen3:8b"
     max_pages_per_node: 10
     add_node_summary: true
     tree_output_format: "json"
 
   # --- Retrieval ---
   retrieval:
-    model: "llama3.2:3b"
+    model: "qwen3:8b"
     max_tree_depth: 5
     max_retrieved_pages: 10
     reasoning_strategy: "top_down"  # top_down | breadth_first
 
   # --- Generation ---
   generation:
-    model: "llama3.2:3b"
+    model: "qwen3:8b"
     system_prompt: |
       You are a precise research assistant. Answer the question using ONLY
       the provided context. If the context does not contain enough information,

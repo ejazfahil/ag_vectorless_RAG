@@ -9,7 +9,7 @@ pipeline:
 
   # --- Query Router ---
   router:
-    model: "llama3.2:3b"
+    model: "qwen3:8b"
     classification_prompt: |
       Classify the following query into one of these categories:
       - STRUCTURED: The answer likely resides in a specific section/table
@@ -23,7 +23,7 @@ pipeline:
 
   # --- Hierarchical Tree Component ---
   tree:
-    model: "llama3.2:3b"
+    model: "qwen3:8b"
     max_pages_per_node: 10
     add_node_summary: true
     max_tree_depth: 5
@@ -46,7 +46,7 @@ pipeline:
 
   # --- Verification Agent ---
   verifier:
-    model: "llama3.2:3b"
+    model: "qwen3:8b"
     max_retries: 2
     verification_checks:
       - "answer_grounded_in_context"
@@ -56,7 +56,7 @@ pipeline:
 
   # --- Generation ---
   generation:
-    model: "llama3.2:3b"
+    model: "qwen3:8b"
     system_prompt: |
       You are a state-of-the-art research assistant powered by a hybrid
       vectorless retrieval system. Answer using ONLY the provided context.

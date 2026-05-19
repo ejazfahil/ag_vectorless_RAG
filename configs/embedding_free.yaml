@@ -20,7 +20,7 @@ pipeline:
     temperature: 0.0
 
   answer_generation:
-    model: "llama3.2:3b"      # Strong synthesizer (maps to paper's GPT-4-Turbo)
+    model: "qwen3:8b"      # Strong synthesizer (maps to paper's GPT-4-Turbo)
     temperature: 0.1
     system_prompt: |
       You are a precise research assistant. Answer questions using ONLY

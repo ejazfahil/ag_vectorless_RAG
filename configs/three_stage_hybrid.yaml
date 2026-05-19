@@ -10,7 +10,7 @@ pipeline:
 
   # Model selection
   model: "qwen3:8b"             # Strong reasoning model (Stages 2, multi-hop, self-eval)
-  quote_model: "llama3.2:3b"    # Fast extraction model (Stage 3)
+  quote_model: "qwen3:8b"    # Fast extraction model (Stage 3)
 
   # Stage 1: BM25 Lexical Recall
   bm25_top_k: 50                # Blueprint E.1: "bm25s top-50 (~1 ms)"

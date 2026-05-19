@@ -7,11 +7,11 @@ pipeline:
   # --- Agent Architecture ---
   agents:
     decomposer:
-      model: "llama3.2:3b"
+      model: "qwen3:8b"
       role: "Break complex queries into sub-questions"
       max_sub_queries: 4
     searcher:
-      model: "llama3.2:3b"
+      model: "qwen3:8b"
       role: "Search and retrieve relevant document sections"
       tools:
         - "read_document"
@@ -19,10 +19,10 @@ pipeline:
         - "skim_document"
       max_context_tokens: 128000     # Leverage large context windows
     synthesizer:
-      model: "llama3.2:3b"
+      model: "qwen3:8b"
       role: "Synthesize findings into a coherent answer"
     verifier:
-      model: "llama3.2:3b"
+      model: "qwen3:8b"
       role: "Verify answer is grounded in retrieved context"
       verification_mode: "strict"    # strict | lenient
 

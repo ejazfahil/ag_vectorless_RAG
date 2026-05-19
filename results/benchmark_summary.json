@@ -2,44 +2,52 @@
   {
     "pipeline": "bm25",
     "domain": "finance",
-    "n": 5,
+    "n": 20,
     "success_rate": 1.0,
     "latency": {
-      "mean_s": 17.891333275,
-      "median_s": 18.455152875000003,
-      "p50_s": 18.455152875000003,
-      "p95_s": 19.390725508200003,
-      "min_s": 15.135608666999996,
-      "max_s": 19.497871250000003
+      "mean_s": 18.061334675,
+      "median_s": 17.91075506249999,
+      "p50_s": 17.91075506249999,
+      "p95_s": 24.364102789900027,
+      "min_s": 12.431162291999982,
+      "max_s": 28.09535362500003
     },
     "memory": {
-      "mean_delta_mb": -4.030464,
-      "max_delta_mb": 6.651904,
-      "peak_rss_mb": 30.588928
+      "mean_delta_mb": -0.9805823999999999,
+      "max_delta_mb": 8.27392,
+      "peak_rss_mb": 29.32736
     },
     "tokens": {
-      "total": 21730,
-      "mean_per_query": 4346
+      "total": 85649,
+      "mean_per_query": 4282.45
     },
     "cost": {
       "total_usd": 0.0,
       "mean_per_query_usd": 0.0
     },
     "errors": {
-      "none": 5
+      "none": 20
     },
     "latency_by_type": {
       "factual_numeric": {
-        "mean_s": 17.048875603999996,
-        "n": 2
+        "mean_s": 16.691953861166667,
+        "n": 6
       },
       "factual": {
-        "mean_s": 17.405891042,
-        "n": 1
+        "mean_s": 17.6606481665,
+        "n": 2
       },
       "trend_analysis": {
-        "mean_s": 18.976512062500003,
-        "n": 2
+        "mean_s": 19.438242347000013,
+        "n": 6
+      },
+      "factual_descriptive": {
+        "mean_s": 17.33914543066666,
+        "n": 3
+      },
+      "multi_hop": {
+        "mean_s": 19.035594542000002,
+        "n": 3
       }
     }
   }
