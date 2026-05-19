@@ -1,0 +1,31 @@
+# ============================================================
+# Adaptive Retrieval Router — Blueprint Section E.4
+# ============================================================
+# Selects the optimal RAG paradigm per query type.
+#
+# Expected token savings: ~28.1% vs always-expensive baseline
+# (per RAGRouter-Bench lightweight routing paper)
+
+router:
+  # Routing mode:
+  #   ml      — sub-ms heuristic (no LLM call, ~80% accuracy)
+  #   llm     — single LLM call (~93% accuracy, adds ~1s latency)
+  #   hybrid  — ML first, LLM if confidence < threshold (recommended)
+  mode: "hybrid"
+
+  # Confidence threshold below which ML falls back to LLM
+  llm_fallback_threshold: 0.65
+
+  # LLM to use for classification (should be fast + reliable JSON)
+  llm_model: "qwen3:8b"
+
+# Pipeline mapping (which pipeline to invoke per category):
+#   single_hop  → bm25           (cheap, ~1ms retrieval)
+#   multi_hop   → three_stage_hybrid  (BM25+Tree+EmbeddingFree)
+#   summary     → roaming         (iterative section expansion)
+#   agentic     → agentic         (decompose+search+synthesize+verify)
+pipeline_mapping:
+  single_hop: "bm25"
+  multi_hop: "three_stage_hybrid"
+  summary: "roaming"
+  agentic: "agentic"

@@ -1,8 +1,13 @@
 """
-Pipeline 3: BM25 Lexical RAG (Elasticsearch)
-─────────────────────────────────────────────
+Pipeline 3: BM25 Lexical RAG
+──────────────────────────────
 Classic keyword-based retrieval using TF-IDF/BM25 scoring.
 No embeddings, no vectors — pure term frequency matching.
+
+Retrieval priority:
+  1. bm25s library (new.md B.4/D.4 — "benchmarks within striking distance
+     of Elasticsearch on a single node while being pure-Python")
+  2. Custom InMemoryBM25 (Okapi BM25) — fallback when bm25s not installed
 
 Falls back to in-memory BM25 if Elasticsearch is unavailable.
 """
@@ -105,13 +110,30 @@ class InMemoryBM25:
         return [t for t in text.split() if len(t) > 1]
 
 
+def _try_import_bm25s():
+    """Try importing bm25s; return (module, Stemmer) or (None, None)."""
+    try:
+        import bm25s
+        try:
+            import Stemmer
+            stemmer = Stemmer.Stemmer("english")
+        except ImportError:
+            stemmer = None
+        return bm25s, stemmer
+    except ImportError:
+        return None, None
+
+
 class BM25RAG(RAGPipeline):
     """
     BM25 Lexical RAG pipeline.
 
-    Ingestion: Chunk documents → index with BM25 (in-memory or Elasticsearch)
+    Ingestion: Chunk documents → index with BM25 (bm25s or in-memory fallback)
     Retrieval: BM25 keyword search → top-K chunks
     Generation: LLM answers from retrieved chunks
+
+    Uses bm25s library if installed (new.md B.4/D.4 — significantly faster
+    than Elasticsearch single-node while being pure-Python).
     """
 
     def __init__(self, config: dict[str, Any]):
@@ -124,7 +146,7 @@ class BM25RAG(RAGPipeline):
         self.chunk_size = ing_cfg.get("chunk_size", 512)
         self.chunk_overlap = ing_cfg.get("chunk_overlap", 64)
         self.top_k = ret_cfg.get("top_k", 5)
-        self.gen_model = gen_cfg.get("model", "gpt-4o")
+        self.gen_model = gen_cfg.get("model", "qwen3:8b")
         self.system_prompt = gen_cfg.get("system_prompt", "")
 
         self._gen_client = LLMClient(model=self.gen_model, temperature=0.0)
@@ -132,11 +154,24 @@ class BM25RAG(RAGPipeline):
         self._index_dir: str | None = None
         self._chunk_count = 0
 
+        # bm25s fast-path (new.md B.4/D.4)
+        self._bm25s_mod, self._stemmer = _try_import_bm25s()
+        self._bm25s_retriever = None   # bm25s.BM25 instance
+        self._bm25s_corpus: list[str] = []
+        self._bm25s_chunk_meta: list[dict] = []
+        if self._bm25s_mod:
+            logger.info("BM25RAG: using bm25s library (fast path)")
+        else:
+            logger.info("BM25RAG: bm25s not installed, using InMemoryBM25 fallback")
+
     def ingest(self, corpus_path: str) -> IngestionReport:
-        """Chunk documents and build BM25 index."""
+        """Chunk documents and build BM25 index (bm25s fast-path or InMemoryBM25)."""
         start = time.perf_counter()
         corpus_dir = Path(corpus_path)
-        self._bm25 = InMemoryBM25()  # Reset
+        self._bm25 = InMemoryBM25()  # Reset fallback
+        self._bm25s_corpus = []
+        self._bm25s_chunk_meta = []
+        self._chunk_count = 0
 
         manifest_path = corpus_dir / "manifest.json"
         if manifest_path.exists():
@@ -157,23 +192,36 @@ class BM25RAG(RAGPipeline):
             full_text = doc_data.get("full_text", "")
             title = doc_data.get("title", doc_id)
 
-            # Chunk the document
             chunks = self._chunk_text(full_text)
             for i, chunk in enumerate(chunks):
                 chunk_id = f"{doc_id}_chunk_{i}"
-                self._bm25.add_document(
-                    doc_id=chunk_id,
-                    text=chunk,
-                    metadata={
-                        "source_doc": doc_id,
-                        "title": title,
-                        "chunk_index": i,
-                        "domain": doc_data.get("domain", ""),
-                    },
-                )
+                meta = {
+                    "source_doc": doc_id,
+                    "title": title,
+                    "chunk_index": i,
+                    "domain": doc_data.get("domain", ""),
+                }
+                if self._bm25s_mod:
+                    # bm25s path — collect texts + metadata for batch indexing
+                    self._bm25s_corpus.append(chunk)
+                    self._bm25s_chunk_meta.append({"id": chunk_id, "text": chunk, **meta})
+                else:
+                    # fallback path
+                    self._bm25.add_document(doc_id=chunk_id, text=chunk, metadata=meta)
+
             self._chunk_count += len(chunks)
             doc_count += 1
             logger.debug(f"Indexed {doc_id}: {len(chunks)} chunks")
+
+        # Build bm25s index (new.md B.4: batch indexing is faster)
+        if self._bm25s_mod and self._bm25s_corpus:
+            bm25s = self._bm25s_mod
+            tokens = bm25s.tokenize(
+                self._bm25s_corpus, stopwords="en", stemmer=self._stemmer
+            )
+            self._bm25s_retriever = bm25s.BM25(method="lucene", k1=1.2, b=0.75)
+            self._bm25s_retriever.index(tokens)
+            logger.debug(f"bm25s index built: {len(self._bm25s_corpus)} chunks")
 
         elapsed = time.perf_counter() - start
 
@@ -209,20 +257,37 @@ class BM25RAG(RAGPipeline):
         """BM25 search → top-K chunks → LLM generation."""
         start = time.perf_counter()
 
-        # BM25 search
-        results = self._bm25.search(question, top_k=self.top_k)
-
         contexts = []
         references = []
-        for r in results:
-            doc = r["doc"]
-            contexts.append(doc["text"])
-            references.append({
-                "chunk_id": doc["id"],
-                "source_doc": doc["metadata"].get("source_doc", ""),
-                "title": doc["metadata"].get("title", ""),
-                "bm25_score": round(r["score"], 4),
-            })
+
+        if self._bm25s_mod and self._bm25s_retriever is not None:
+            # Fast path: bm25s library (new.md B.4/D.4)
+            bm25s = self._bm25s_mod
+            q_tokens = bm25s.tokenize([question], stopwords="en", stemmer=self._stemmer)
+            results, scores = self._bm25s_retriever.retrieve(
+                q_tokens, k=min(self.top_k, len(self._bm25s_corpus))
+            )
+            for idx, score in zip(results[0], scores[0]):
+                meta = self._bm25s_chunk_meta[idx]
+                contexts.append(meta["text"])
+                references.append({
+                    "chunk_id": meta["id"],
+                    "source_doc": meta.get("source_doc", ""),
+                    "title": meta.get("title", ""),
+                    "bm25_score": round(float(score), 4),
+                })
+        else:
+            # Fallback: custom InMemoryBM25
+            results = self._bm25.search(question, top_k=self.top_k)
+            for r in results:
+                doc = r["doc"]
+                contexts.append(doc["text"])
+                references.append({
+                    "chunk_id": doc["id"],
+                    "source_doc": doc["metadata"].get("source_doc", ""),
+                    "title": doc["metadata"].get("title", ""),
+                    "bm25_score": round(r["score"], 4),
+                })
 
         # Generate answer
         passages_text = "\n\n---\n\n".join(

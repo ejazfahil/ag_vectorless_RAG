@@ -1,12 +1,21 @@
 """
 RAGAS Evaluator — wraps the RAGAS framework to evaluate RAG pipelines
 on faithfulness, answer relevancy, context precision, and context recall.
+
+New.md C.1: RAGAS pointed at Ollama via its OpenAI-compatible endpoint:
+  base_url="http://localhost:11434/v1"
+  evaluator_llm = llm_factory("qwen3:14b", provider="openai", client=client)
+
+The judge model should be STRONGER than the system-under-test.
+Default: qwen3:14b judges qwen3:8b pipelines.
+If RAGAS not installed: falls back to difflib string-similarity approximation.
 """
 
 from __future__ import annotations
 
 
 import json
+import os
 from pathlib import Path
 from dataclasses import dataclass, field
 from typing import Any
@@ -59,6 +68,11 @@ class RAGASEvaluator:
 
     def __init__(self, config: dict[str, Any] | None = None):
         self.config = config or {}
+        # new.md C.1: judge model — stronger than the system-under-test
+        self._judge_model = self.config.get("judge_model", "qwen3:14b")
+        self._ollama_base_url = self.config.get(
+            "ollama_base_url", "http://localhost:11434/v1"
+        )
 
     def evaluate(
         self,
@@ -93,6 +107,9 @@ class RAGASEvaluator:
             )
             from datasets import Dataset
 
+            # new.md C.1: point RAGAS at Ollama's OpenAI-compatible endpoint
+            ragas_llm = self._build_ragas_llm()
+
             # Prepare dataset in RAGAS format
             eval_data = {
                 "question": [r["question"] for r in responses],
@@ -103,16 +120,20 @@ class RAGASEvaluator:
 
             dataset = Dataset.from_dict(eval_data)
 
-            # Run evaluation
-            result = ragas_evaluate(
-                dataset=dataset,
-                metrics=[
+            ragas_kwargs: dict[str, Any] = {
+                "dataset": dataset,
+                "metrics": [
                     faithfulness,
                     answer_relevancy,
                     context_precision,
                     context_recall,
                 ],
-            )
+            }
+            if ragas_llm is not None:
+                ragas_kwargs["llm"] = ragas_llm
+
+            # Run evaluation
+            result = ragas_evaluate(**ragas_kwargs)
 
             metrics = {
                 "faithfulness": float(result.get("faithfulness", 0.0)),
@@ -145,6 +166,31 @@ class RAGASEvaluator:
             logger.info(f"  {k}: {v:.4f}")
 
         return ragas_result
+
+    def _build_ragas_llm(self):
+        """
+        Build a RAGAS LLM factory pointed at Ollama (new.md C.1).
+        Returns None if RAGAS or openai package is not available.
+        """
+        try:
+            from openai import OpenAI
+            from ragas.llms import llm_factory
+
+            client = OpenAI(api_key="ollama", base_url=self._ollama_base_url)
+            evaluator_llm = llm_factory(
+                self._judge_model, provider="openai", openai_client=client
+            )
+            logger.info(
+                f"RAGAS judge: {self._judge_model} via Ollama "
+                f"({self._ollama_base_url})"
+            )
+            return evaluator_llm
+        except Exception as e:
+            logger.warning(
+                f"Could not build RAGAS Ollama LLM ({e}). "
+                f"Using RAGAS default (may require OPENAI_API_KEY)."
+            )
+            return None
 
     def _fallback_evaluation(self, responses: list[dict]) -> dict[str, float]:
         """
