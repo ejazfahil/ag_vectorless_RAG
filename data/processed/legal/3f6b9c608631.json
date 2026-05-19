@@ -1,0 +1,136 @@
+{
+  "doc_id": "3f6b9c608631",
+  "filename": "Master_Services_Agreement.txt",
+  "domain": "legal",
+  "title": "Master Services Agreement",
+  "full_text": "# Master Services Agreement\n\n## 1. DEFINITIONS\n\n1.1 \"Agreement\" means this Master Services Agreement including all\nexhibits, schedules, and amendments thereto.\n\n1.2 \"Confidential Information\" means all non-public information disclosed\nby either party that is designated as confidential or that reasonably\nshould be considered confidential.\n\n1.3 \"Effective Date\" means the date first written above.\n\n## 2. SCOPE OF AGREEMENT\n\n2.1 This Agreement governs the terms and conditions under which the parties\nshall conduct business as described herein.\n\n2.2 The scope of services shall be as set forth in Exhibit A attached hereto.\n\n## 3. TERM AND TERMINATION\n\n3.1 The initial term shall be two (2) years from the Effective Date.\n\n3.2 Either party may terminate this Agreement for convenience upon ninety\n(90) days' prior written notice.\n\n3.3 Either party may terminate for cause if the other party materially\nbreaches this Agreement and fails to cure such breach within thirty (30)\ndays after written notice.\n\n## 4. COMPENSATION AND PAYMENT\n\n4.1 Fees shall be as set forth in Exhibit B.\n\n4.2 Payment terms are Net 30 from the date of invoice.\n\n4.3 Late payments shall accrue interest at 1.5% per month.\n\n## 5. INTELLECTUAL PROPERTY\n\n5.1 Each party retains all rights in its pre-existing intellectual property.\n\n5.2 Work product created under this Agreement shall be owned by the\ncommissioning party, subject to Section 5.3.\n\n5.3 The provider retains a non-exclusive license to any general tools,\nmethodologies, or know-how developed during performance.\n\n## 6. LIMITATION OF LIABILITY\n\n6.1 EXCEPT FOR BREACHES OF CONFIDENTIALITY, NEITHER PARTY SHALL BE LIABLE\nFOR INDIRECT, INCIDENTAL, SPECIAL, OR CONSEQUENTIAL DAMAGES.\n\n6.2 Each party's total aggregate liability shall not exceed the total fees\npaid or payable in the twelve (12) months preceding the claim.\n\n## 7. INDEMNIFICATION\n\n7.1 Each party shall indemnify and hold harmless the other party from and\nagainst any claims arising from the indemnifying party's breach of this\nAgreement or negligent acts.\n\n## 8. GOVERNING LAW\n\n8.1 This Agreement shall be governed by and construed in accordance with\nthe laws of the State of Delaware.\n\n8.2 Any disputes shall be resolved through binding arbitration in accordance\nwith the rules of the American Arbitration Association.\n\n## 9. MISCELLANEOUS\n\n9.1 This Agreement constitutes the entire agreement between the parties.\n\n9.2 No modification shall be effective unless in writing and signed by\nboth parties.\n\n9.3 If any provision is found to be unenforceable, the remaining provisions\nshall continue in full force and effect.\n",
+  "sections": [
+    {
+      "id": "1",
+      "title": "Master Services Agreement",
+      "content": "",
+      "level": 1,
+      "page_start": null,
+      "page_end": null,
+      "word_count": 0,
+      "children": [],
+      "metadata": {}
+    },
+    {
+      "id": "2",
+      "title": "1. DEFINITIONS",
+      "content": "1.1 \"Agreement\" means this Master Services Agreement including all\nexhibits, schedules, and amendments thereto.\n\n1.2 \"Confidential Information\" means all non-public information disclosed\nby either party that is designated as confidential or that reasonably\nshould be considered confidential.\n\n1.3 \"Effective Date\" means the date first written above.",
+      "level": 2,
+      "page_start": null,
+      "page_end": null,
+      "word_count": 0,
+      "children": [],
+      "metadata": {}
+    },
+    {
+      "id": "3",
+      "title": "2. SCOPE OF AGREEMENT",
+      "content": "2.1 This Agreement governs the terms and conditions under which the parties\nshall conduct business as described herein.\n\n2.2 The scope of services shall be as set forth in Exhibit A attached hereto.",
+      "level": 2,
+      "page_start": null,
+      "page_end": null,
+      "word_count": 0,
+      "children": [],
+      "metadata": {}
+    },
+    {
+      "id": "4",
+      "title": "3. TERM AND TERMINATION",
+      "content": "3.1 The initial term shall be two (2) years from the Effective Date.\n\n3.2 Either party may terminate this Agreement for convenience upon ninety\n(90) days' prior written notice.\n\n3.3 Either party may terminate for cause if the other party materially\nbreaches this Agreement and fails to cure such breach within thirty (30)\ndays after written notice.",
+      "level": 2,
+      "page_start": null,
+      "page_end": null,
+      "word_count": 0,
+      "children": [],
+      "metadata": {}
+    },
+    {
+      "id": "5",
+      "title": "4. COMPENSATION AND PAYMENT",
+      "content": "4.1 Fees shall be as set forth in Exhibit B.\n\n4.2 Payment terms are Net 30 from the date of invoice.\n\n4.3 Late payments shall accrue interest at 1.5% per month.",
+      "level": 2,
+      "page_start": null,
+      "page_end": null,
+      "word_count": 0,
+      "children": [],
+      "metadata": {}
+    },
+    {
+      "id": "6",
+      "title": "5. INTELLECTUAL PROPERTY",
+      "content": "5.1 Each party retains all rights in its pre-existing intellectual property.\n\n5.2 Work product created under this Agreement shall be owned by the\ncommissioning party, subject to Section 5.3.\n\n5.3 The provider retains a non-exclusive license to any general tools,\nmethodologies, or know-how developed during performance.",
+      "level": 2,
+      "page_start": null,
+      "page_end": null,
+      "word_count": 0,
+      "children": [],
+      "metadata": {}
+    },
+    {
+      "id": "7",
+      "title": "6. LIMITATION OF LIABILITY",
+      "content": "6.1 EXCEPT FOR BREACHES OF CONFIDENTIALITY, NEITHER PARTY SHALL BE LIABLE",
+      "level": 2,
+      "page_start": null,
+      "page_end": null,
+      "word_count": 0,
+      "children": [],
+      "metadata": {}
+    },
+    {
+      "id": "8",
+      "title": "FOR INDIRECT, INCIDENTAL, SPECIAL, OR CONSEQUENTIAL DAMAGES.",
+      "content": "6.2 Each party's total aggregate liability shall not exceed the total fees\npaid or payable in the twelve (12) months preceding the claim.",
+      "level": 1,
+      "page_start": null,
+      "page_end": null,
+      "word_count": 0,
+      "children": [],
+      "metadata": {}
+    },
+    {
+      "id": "9",
+      "title": "7. INDEMNIFICATION",
+      "content": "7.1 Each party shall indemnify and hold harmless the other party from and\nagainst any claims arising from the indemnifying party's breach of this\nAgreement or negligent acts.",
+      "level": 2,
+      "page_start": null,
+      "page_end": null,
+      "word_count": 0,
+      "children": [],
+      "metadata": {}
+    },
+    {
+      "id": "10",
+      "title": "8. GOVERNING LAW",
+      "content": "8.1 This Agreement shall be governed by and construed in accordance with\nthe laws of the State of Delaware.\n\n8.2 Any disputes shall be resolved through binding arbitration in accordance\nwith the rules of the American Arbitration Association.",
+      "level": 2,
+      "page_start": null,
+      "page_end": null,
+      "word_count": 0,
+      "children": [],
+      "metadata": {}
+    },
+    {
+      "id": "11",
+      "title": "9. MISCELLANEOUS",
+      "content": "9.1 This Agreement constitutes the entire agreement between the parties.\n\n9.2 No modification shall be effective unless in writing and signed by\nboth parties.\n\n9.3 If any provision is found to be unenforceable, the remaining provisions\nshall continue in full force and effect.",
+      "level": 2,
+      "page_start": null,
+      "page_end": null,
+      "word_count": 0,
+      "children": [],
+      "metadata": {}
+    }
+  ],
+  "total_pages": null,
+  "total_words": 404,
+  "metadata": {
+    "source_format": ".txt",
+    "source_path": "data/raw/legal/docs/Master_Services_Agreement.txt"
+  }
+}

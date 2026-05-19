@@ -1,0 +1,213 @@
+{
+  "doc_id": "50128119ecb3",
+  "filename": "API_Reference_Manual.txt",
+  "domain": "technical",
+  "title": "Api Reference Manual",
+  "full_text": "# REST API Reference Manual v3.2\n\n## 1. Authentication\n\n### 1.1 API Key Authentication\nAll API requests must include an API key in the Authorization header:\n```\nAuthorization: Bearer sk-your-api-key-here\n```\n\n### 1.2 OAuth 2.0\nFor user-delegated access, use the OAuth 2.0 authorization code flow.\nRedirect URI must be pre-registered in the developer console.\n\n### 1.3 Rate Limits\n- Free tier: 100 requests/minute\n- Pro tier: 1,000 requests/minute\n- Enterprise: Custom (contact sales)\n\nRate limit headers returned: X-RateLimit-Limit, X-RateLimit-Remaining\n\n## 2. Endpoints\n\n### 2.1 GET /api/v3/documents\nRetrieve a list of documents.\n\nParameters:\n| Parameter | Type | Required | Description |\n|-----------|------|----------|-------------|\n| page | int | No | Page number (default: 1) |\n| limit | int | No | Results per page (max: 100) |\n| sort | string | No | Sort field (created_at, name) |\n| filter | string | No | Filter expression |\n\nResponse: 200 OK\n```json\n{\n  \"data\": [...],\n  \"pagination\": {\"page\": 1, \"total_pages\": 10, \"total_items\": 95}\n}\n```\n\n### 2.2 POST /api/v3/documents\nCreate a new document.\n\nRequest Body:\n```json\n{\n  \"title\": \"My Document\",\n  \"content\": \"Document content here\",\n  \"tags\": [\"finance\", \"q3-report\"]\n}\n```\n\n### 2.3 PUT /api/v3/documents/{id}\nUpdate an existing document. Requires document ownership or admin role.\n\n### 2.4 DELETE /api/v3/documents/{id}\nSoft-delete a document. Can be restored within 30 days.\n\n## 3. Error Handling\n\n### 3.1 Error Codes\n| Code | Description | Action |\n|------|-------------|--------|\n| 400 | Bad Request | Check request parameters |\n| 401 | Unauthorized | Verify API key |\n| 403 | Forbidden | Check permissions |\n| 404 | Not Found | Resource doesn't exist |\n| 429 | Rate Limited | Retry after X-Retry-After seconds |\n| 500 | Internal Error | Contact support |\n\n### 3.2 Error Response Format\n```json\n{\n  \"error\": {\n    \"code\": \"RATE_LIMITED\",\n    \"message\": \"Too many requests\",\n    \"retry_after\": 30\n  }\n}\n```\n\n## 4. Webhooks\n\n### 4.1 Configuration\nRegister webhook URLs in Settings > Integrations > Webhooks.\n\n### 4.2 Events\n- document.created\n- document.updated\n- document.deleted\n- user.invited\n\n### 4.3 Verification\nAll webhook payloads include an X-Signature header for HMAC-SHA256 verification.\n\n## 5. SDKs and Libraries\n\nOfficial SDKs: Python, JavaScript/TypeScript, Go, Java\nCommunity SDKs: Ruby, PHP, Rust, C#\n",
+  "sections": [
+    {
+      "id": "1",
+      "title": "REST API Reference Manual v3.2",
+      "content": "",
+      "level": 1,
+      "page_start": null,
+      "page_end": null,
+      "word_count": 0,
+      "children": [],
+      "metadata": {}
+    },
+    {
+      "id": "2",
+      "title": "1. Authentication",
+      "content": "",
+      "level": 2,
+      "page_start": null,
+      "page_end": null,
+      "word_count": 0,
+      "children": [],
+      "metadata": {}
+    },
+    {
+      "id": "3",
+      "title": "1.1 API Key Authentication",
+      "content": "All API requests must include an API key in the Authorization header:\n```\nAuthorization: Bearer sk-your-api-key-here\n```",
+      "level": 3,
+      "page_start": null,
+      "page_end": null,
+      "word_count": 0,
+      "children": [],
+      "metadata": {}
+    },
+    {
+      "id": "4",
+      "title": "1.2 OAuth 2.0",
+      "content": "For user-delegated access, use the OAuth 2.0 authorization code flow.\nRedirect URI must be pre-registered in the developer console.",
+      "level": 3,
+      "page_start": null,
+      "page_end": null,
+      "word_count": 0,
+      "children": [],
+      "metadata": {}
+    },
+    {
+      "id": "5",
+      "title": "1.3 Rate Limits",
+      "content": "- Free tier: 100 requests/minute\n- Pro tier: 1,000 requests/minute\n- Enterprise: Custom (contact sales)\n\nRate limit headers returned: X-RateLimit-Limit, X-RateLimit-Remaining",
+      "level": 3,
+      "page_start": null,
+      "page_end": null,
+      "word_count": 0,
+      "children": [],
+      "metadata": {}
+    },
+    {
+      "id": "6",
+      "title": "2. Endpoints",
+      "content": "",
+      "level": 2,
+      "page_start": null,
+      "page_end": null,
+      "word_count": 0,
+      "children": [],
+      "metadata": {}
+    },
+    {
+      "id": "7",
+      "title": "2.1 GET /api/v3/documents",
+      "content": "Retrieve a list of documents.\n\nParameters:\n| Parameter | Type | Required | Description |\n|-----------|------|----------|-------------|\n| page | int | No | Page number (default: 1) |\n| limit | int | No | Results per page (max: 100) |\n| sort | string | No | Sort field (created_at, name) |\n| filter | string | No | Filter expression |\n\nResponse: 200 OK\n```json\n{\n  \"data\": [...],\n  \"pagination\": {\"page\": 1, \"total_pages\": 10, \"total_items\": 95}\n}\n```",
+      "level": 3,
+      "page_start": null,
+      "page_end": null,
+      "word_count": 0,
+      "children": [],
+      "metadata": {}
+    },
+    {
+      "id": "8",
+      "title": "2.2 POST /api/v3/documents",
+      "content": "Create a new document.\n\nRequest Body:\n```json\n{\n  \"title\": \"My Document\",\n  \"content\": \"Document content here\",\n  \"tags\": [\"finance\", \"q3-report\"]\n}\n```",
+      "level": 3,
+      "page_start": null,
+      "page_end": null,
+      "word_count": 0,
+      "children": [],
+      "metadata": {}
+    },
+    {
+      "id": "9",
+      "title": "2.3 PUT /api/v3/documents/{id}",
+      "content": "Update an existing document. Requires document ownership or admin role.",
+      "level": 3,
+      "page_start": null,
+      "page_end": null,
+      "word_count": 0,
+      "children": [],
+      "metadata": {}
+    },
+    {
+      "id": "10",
+      "title": "2.4 DELETE /api/v3/documents/{id}",
+      "content": "Soft-delete a document. Can be restored within 30 days.",
+      "level": 3,
+      "page_start": null,
+      "page_end": null,
+      "word_count": 0,
+      "children": [],
+      "metadata": {}
+    },
+    {
+      "id": "11",
+      "title": "3. Error Handling",
+      "content": "",
+      "level": 2,
+      "page_start": null,
+      "page_end": null,
+      "word_count": 0,
+      "children": [],
+      "metadata": {}
+    },
+    {
+      "id": "12",
+      "title": "3.1 Error Codes",
+      "content": "| Code | Description | Action |\n|------|-------------|--------|\n| 400 | Bad Request | Check request parameters |\n| 401 | Unauthorized | Verify API key |\n| 403 | Forbidden | Check permissions |\n| 404 | Not Found | Resource doesn't exist |\n| 429 | Rate Limited | Retry after X-Retry-After seconds |\n| 500 | Internal Error | Contact support |",
+      "level": 3,
+      "page_start": null,
+      "page_end": null,
+      "word_count": 0,
+      "children": [],
+      "metadata": {}
+    },
+    {
+      "id": "13",
+      "title": "3.2 Error Response Format",
+      "content": "```json\n{\n  \"error\": {\n    \"code\": \"RATE_LIMITED\",\n    \"message\": \"Too many requests\",\n    \"retry_after\": 30\n  }\n}\n```",
+      "level": 3,
+      "page_start": null,
+      "page_end": null,
+      "word_count": 0,
+      "children": [],
+      "metadata": {}
+    },
+    {
+      "id": "14",
+      "title": "4. Webhooks",
+      "content": "",
+      "level": 2,
+      "page_start": null,
+      "page_end": null,
+      "word_count": 0,
+      "children": [],
+      "metadata": {}
+    },
+    {
+      "id": "15",
+      "title": "4.1 Configuration",
+      "content": "Register webhook URLs in Settings > Integrations > Webhooks.",
+      "level": 3,
+      "page_start": null,
+      "page_end": null,
+      "word_count": 0,
+      "children": [],
+      "metadata": {}
+    },
+    {
+      "id": "16",
+      "title": "4.2 Events",
+      "content": "- document.created\n- document.updated\n- document.deleted\n- user.invited",
+      "level": 3,
+      "page_start": null,
+      "page_end": null,
+      "word_count": 0,
+      "children": [],
+      "metadata": {}
+    },
+    {
+      "id": "17",
+      "title": "4.3 Verification",
+      "content": "All webhook payloads include an X-Signature header for HMAC-SHA256 verification.",
+      "level": 3,
+      "page_start": null,
+      "page_end": null,
+      "word_count": 0,
+      "children": [],
+      "metadata": {}
+    },
+    {
+      "id": "18",
+      "title": "5. SDKs and Libraries",
+      "content": "Official SDKs: Python, JavaScript/TypeScript, Go, Java\nCommunity SDKs: Ruby, PHP, Rust, C#",
+      "level": 2,
+      "page_start": null,
+      "page_end": null,
+      "word_count": 0,
+      "children": [],
+      "metadata": {}
+    }
+  ],
+  "total_pages": null,
+  "total_words": 365,
+  "metadata": {
+    "source_format": ".txt",
+    "source_path": "data/raw/technical/docs/API_Reference_Manual.txt"
+  }
+}

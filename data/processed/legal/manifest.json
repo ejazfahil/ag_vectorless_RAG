@@ -1,0 +1,32 @@
+{
+  "domain": "legal",
+  "total_documents": 5,
+  "total_words": 2018,
+  "documents": [
+    {
+      "doc_id": "8358aec2c679",
+      "filename": "Asset_Purchase_Agreement.txt",
+      "words": 404
+    },
+    {
+      "doc_id": "05d2a4ed67cc",
+      "filename": "Employment_Agreement.txt",
+      "words": 402
+    },
+    {
+      "doc_id": "3f6b9c608631",
+      "filename": "Master_Services_Agreement.txt",
+      "words": 404
+    },
+    {
+      "doc_id": "e9fcfefab8eb",
+      "filename": "Non_Disclosure_Agreement.txt",
+      "words": 404
+    },
+    {
+      "doc_id": "f530bb71d738",
+      "filename": "Software_License_Agreement.txt",
+      "words": 404
+    }
+  ]
+}

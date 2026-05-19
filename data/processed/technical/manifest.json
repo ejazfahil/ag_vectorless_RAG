@@ -1,0 +1,32 @@
+{
+  "domain": "technical",
+  "total_documents": 5,
+  "total_words": 24605,
+  "documents": [
+    {
+      "doc_id": "50128119ecb3",
+      "filename": "API_Reference_Manual.txt",
+      "words": 365
+    },
+    {
+      "doc_id": "18bccaa4ecf0",
+      "filename": "Database_Admin_Guide.txt",
+      "words": 377
+    },
+    {
+      "doc_id": "079818b2b62f",
+      "filename": "Python_argparse_docs.txt",
+      "words": 10526
+    },
+    {
+      "doc_id": "49050dc404a4",
+      "filename": "Python_json_docs.txt",
+      "words": 3915
+    },
+    {
+      "doc_id": "2c94c8011a4f",
+      "filename": "Python_logging_docs.txt",
+      "words": 9422
+    }
+  ]
+}

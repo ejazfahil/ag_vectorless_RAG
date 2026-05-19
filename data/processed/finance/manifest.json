@@ -1,0 +1,107 @@
+{
+  "domain": "finance",
+  "total_documents": 20,
+  "total_words": 62940,
+  "documents": [
+    {
+      "doc_id": "ff07a848581f",
+      "filename": "3M_financial_data.txt",
+      "words": 5085
+    },
+    {
+      "doc_id": "4194b2f24d11",
+      "filename": "AES Corporation_financial_data.txt",
+      "words": 2393
+    },
+    {
+      "doc_id": "b7cba5161337",
+      "filename": "AMD_financial_data.txt",
+      "words": 5090
+    },
+    {
+      "doc_id": "c9a6154f5325",
+      "filename": "Activision Blizzard_financial_data.txt",
+      "words": 1859
+    },
+    {
+      "doc_id": "e867d7a9d5d4",
+      "filename": "Adobe_financial_data.txt",
+      "words": 2920
+    },
+    {
+      "doc_id": "f7d47fcdb056",
+      "filename": "Amazon_financial_data.txt",
+      "words": 1148
+    },
+    {
+      "doc_id": "63a9fac76a83",
+      "filename": "Amcor_financial_data.txt",
+      "words": 5273
+    },
+    {
+      "doc_id": "382d1607cf94",
+      "filename": "American Express_financial_data.txt",
+      "words": 3814
+    },
+    {
+      "doc_id": "ddae062d2db8",
+      "filename": "American Water Works_financial_data.txt",
+      "words": 2440
+    },
+    {
+      "doc_id": "e0dfe83ceb6a",
+      "filename": "Best Buy_financial_data.txt",
+      "words": 6546
+    },
+    {
+      "doc_id": "47eb3a15b6de",
+      "filename": "Block_financial_data.txt",
+      "words": 241
+    },
+    {
+      "doc_id": "fea6b67701cc",
+      "filename": "Boeing_financial_data.txt",
+      "words": 4739
+    },
+    {
+      "doc_id": "f489149a2fed",
+      "filename": "CVS Health_financial_data.txt",
+      "words": 4065
+    },
+    {
+      "doc_id": "75db6fa1a8d1",
+      "filename": "Coca-Cola_financial_data.txt",
+      "words": 2110
+    },
+    {
+      "doc_id": "1ca137009b31",
+      "filename": "Corning_financial_data.txt",
+      "words": 1859
+    },
+    {
+      "doc_id": "9d1fc0c1ec59",
+      "filename": "Costco_financial_data.txt",
+      "words": 383
+    },
+    {
+      "doc_id": "a1e90a3e0cab",
+      "filename": "Foot Locker_financial_data.txt",
+      "words": 1577
+    },
+    {
+      "doc_id": "9729529cd8c7",
+      "filename": "General Mills_financial_data.txt",
+      "words": 3587
+    },
+    {
+      "doc_id": "a9c99d725b78",
+      "filename": "JPMorgan_financial_data.txt",
+      "words": 3302
+    },
+    {
+      "doc_id": "739e102b29b5",
+      "filename": "Johnson & Johnson_financial_data.txt",
+      "words": 4509
+    }
+  ]
+}

@@ -1,0 +1,202 @@
+{
+  "doc_id": "18bccaa4ecf0",
+  "filename": "Database_Admin_Guide.txt",
+  "domain": "technical",
+  "title": "Database Admin Guide",
+  "full_text": "# Database Administration Guide — PostgreSQL Cluster\n\n## 1. Architecture Overview\n\n### 1.1 Cluster Topology\nPrimary-Replica architecture with automatic failover via Patroni.\n- Primary: Handles all writes and real-time reads\n- Replicas (2): Handle read-only queries with streaming replication\n- PgBouncer: Connection pooling (max 500 connections)\n\n### 1.2 Storage Configuration\n- Data directory: /var/lib/postgresql/16/main\n- WAL directory: /var/lib/postgresql/16/wal (separate SSD)\n- Tablespace: ssd_fast for hot data, hdd_archive for cold data\n\n## 2. Backup and Recovery\n\n### 2.1 Backup Strategy\n- Full backup: Weekly (Sunday 02:00 UTC) via pg_basebackup\n- Incremental: Continuous WAL archiving to S3\n- Retention: 30 days for full backups, 7 days for WAL\n\n### 2.2 Point-in-Time Recovery (PITR)\nTo restore to a specific timestamp:\n```sql\nrecovery_target_time = '2024-03-15 14:30:00 UTC'\nrecovery_target_action = 'promote'\n```\n\n### 2.3 Recovery Time Objective (RTO)\n- Full restore: ~45 minutes for 500GB database\n- PITR: ~60 minutes (depends on WAL volume)\n\n## 3. Performance Tuning\n\n### 3.1 Memory Configuration\n| Parameter | Value | Rationale |\n|-----------|-------|-----------|\n| shared_buffers | 8GB | 25% of 32GB RAM |\n| effective_cache_size | 24GB | 75% of RAM |\n| work_mem | 256MB | For complex sorts/joins |\n| maintenance_work_mem | 2GB | For VACUUM/CREATE INDEX |\n\n### 3.2 Connection Pooling\nPgBouncer configuration:\n- pool_mode = transaction\n- max_client_conn = 500\n- default_pool_size = 25\n\n### 3.3 Query Optimization\n- Use EXPLAIN ANALYZE for query plans\n- Create partial indexes for filtered queries\n- Use pg_stat_statements to identify slow queries\n\n## 4. Monitoring\n\n### 4.1 Key Metrics\n- Connections: active, idle, waiting\n- Replication lag (should be < 100ms)\n- Cache hit ratio (target: > 99%)\n- Transaction rate (TPS)\n- Disk I/O: read/write IOPS and latency\n\n### 4.2 Alerting Thresholds\n| Metric | Warning | Critical |\n|--------|---------|----------|\n| Replication lag | > 1s | > 10s |\n| Connection usage | > 80% | > 95% |\n| Disk usage | > 75% | > 90% |\n| Cache hit ratio | < 98% | < 95% |\n\n## 5. Troubleshooting\n\n### 5.1 Common Issues\n1. Lock contention: Check pg_locks for blocking queries\n2. Bloated tables: Run VACUUM FULL during maintenance window\n3. Slow queries: Check missing indexes via pg_stat_user_tables\n4. Connection exhaustion: Increase PgBouncer pool or fix connection leaks\n",
+  "sections": [
+    {
+      "id": "1",
+      "title": "Database Administration Guide — PostgreSQL Cluster",
+      "content": "",
+      "level": 1,
+      "page_start": null,
+      "page_end": null,
+      "word_count": 0,
+      "children": [],
+      "metadata": {}
+    },
+    {
+      "id": "2",
+      "title": "1. Architecture Overview",
+      "content": "",
+      "level": 2,
+      "page_start": null,
+      "page_end": null,
+      "word_count": 0,
+      "children": [],
+      "metadata": {}
+    },
+    {
+      "id": "3",
+      "title": "1.1 Cluster Topology",
+      "content": "Primary-Replica architecture with automatic failover via Patroni.\n- Primary: Handles all writes and real-time reads\n- Replicas (2): Handle read-only queries with streaming replication\n- PgBouncer: Connection pooling (max 500 connections)",
+      "level": 3,
+      "page_start": null,
+      "page_end": null,
+      "word_count": 0,
+      "children": [],
+      "metadata": {}
+    },
+    {
+      "id": "4",
+      "title": "1.2 Storage Configuration",
+      "content": "- Data directory: /var/lib/postgresql/16/main\n- WAL directory: /var/lib/postgresql/16/wal (separate SSD)\n- Tablespace: ssd_fast for hot data, hdd_archive for cold data",
+      "level": 3,
+      "page_start": null,
+      "page_end": null,
+      "word_count": 0,
+      "children": [],
+      "metadata": {}
+    },
+    {
+      "id": "5",
+      "title": "2. Backup and Recovery",
+      "content": "",
+      "level": 2,
+      "page_start": null,
+      "page_end": null,
+      "word_count": 0,
+      "children": [],
+      "metadata": {}
+    },
+    {
+      "id": "6",
+      "title": "2.1 Backup Strategy",
+      "content": "- Full backup: Weekly (Sunday 02:00 UTC) via pg_basebackup\n- Incremental: Continuous WAL archiving to S3\n- Retention: 30 days for full backups, 7 days for WAL",
+      "level": 3,
+      "page_start": null,
+      "page_end": null,
+      "word_count": 0,
+      "children": [],
+      "metadata": {}
+    },
+    {
+      "id": "7",
+      "title": "2.2 Point-in-Time Recovery (PITR)",
+      "content": "To restore to a specific timestamp:\n```sql\nrecovery_target_time = '2024-03-15 14:30:00 UTC'\nrecovery_target_action = 'promote'\n```",
+      "level": 3,
+      "page_start": null,
+      "page_end": null,
+      "word_count": 0,
+      "children": [],
+      "metadata": {}
+    },
+    {
+      "id": "8",
+      "title": "2.3 Recovery Time Objective (RTO)",
+      "content": "- Full restore: ~45 minutes for 500GB database\n- PITR: ~60 minutes (depends on WAL volume)",
+      "level": 3,
+      "page_start": null,
+      "page_end": null,
+      "word_count": 0,
+      "children": [],
+      "metadata": {}
+    },
+    {
+      "id": "9",
+      "title": "3. Performance Tuning",
+      "content": "",
+      "level": 2,
+      "page_start": null,
+      "page_end": null,
+      "word_count": 0,
+      "children": [],
+      "metadata": {}
+    },
+    {
+      "id": "10",
+      "title": "3.1 Memory Configuration",
+      "content": "| Parameter | Value | Rationale |\n|-----------|-------|-----------|\n| shared_buffers | 8GB | 25% of 32GB RAM |\n| effective_cache_size | 24GB | 75% of RAM |\n| work_mem | 256MB | For complex sorts/joins |\n| maintenance_work_mem | 2GB | For VACUUM/CREATE INDEX |",
+      "level": 3,
+      "page_start": null,
+      "page_end": null,
+      "word_count": 0,
+      "children": [],
+      "metadata": {}
+    },
+    {
+      "id": "11",
+      "title": "3.2 Connection Pooling",
+      "content": "PgBouncer configuration:\n- pool_mode = transaction\n- max_client_conn = 500\n- default_pool_size = 25",
+      "level": 3,
+      "page_start": null,
+      "page_end": null,
+      "word_count": 0,
+      "children": [],
+      "metadata": {}
+    },
+    {
+      "id": "12",
+      "title": "3.3 Query Optimization",
+      "content": "- Use EXPLAIN ANALYZE for query plans\n- Create partial indexes for filtered queries\n- Use pg_stat_statements to identify slow queries",
+      "level": 3,
+      "page_start": null,
+      "page_end": null,
+      "word_count": 0,
+      "children": [],
+      "metadata": {}
+    },
+    {
+      "id": "13",
+      "title": "4. Monitoring",
+      "content": "",
+      "level": 2,
+      "page_start": null,
+      "page_end": null,
+      "word_count": 0,
+      "children": [],
+      "metadata": {}
+    },
+    {
+      "id": "14",
+      "title": "4.1 Key Metrics",
+      "content": "- Connections: active, idle, waiting\n- Replication lag (should be < 100ms)\n- Cache hit ratio (target: > 99%)\n- Transaction rate (TPS)\n- Disk I/O: read/write IOPS and latency",
+      "level": 3,
+      "page_start": null,
+      "page_end": null,
+      "word_count": 0,
+      "children": [],
+      "metadata": {}
+    },
+    {
+      "id": "15",
+      "title": "4.2 Alerting Thresholds",
+      "content": "| Metric | Warning | Critical |\n|--------|---------|----------|\n| Replication lag | > 1s | > 10s |\n| Connection usage | > 80% | > 95% |\n| Disk usage | > 75% | > 90% |\n| Cache hit ratio | < 98% | < 95% |",
+      "level": 3,
+      "page_start": null,
+      "page_end": null,
+      "word_count": 0,
+      "children": [],
+      "metadata": {}
+    },
+    {
+      "id": "16",
+      "title": "5. Troubleshooting",
+      "content": "",
+      "level": 2,
+      "page_start": null,
+      "page_end": null,
+      "word_count": 0,
+      "children": [],
+      "metadata": {}
+    },
+    {
+      "id": "17",
+      "title": "5.1 Common Issues",
+      "content": "1. Lock contention: Check pg_locks for blocking queries\n2. Bloated tables: Run VACUUM FULL during maintenance window\n3. Slow queries: Check missing indexes via pg_stat_user_tables\n4. Connection exhaustion: Increase PgBouncer pool or fix connection leaks",
+      "level": 3,
+      "page_start": null,
+      "page_end": null,
+      "word_count": 0,
+      "children": [],
+      "metadata": {}
+    }
+  ],
+  "total_pages": null,
+  "total_words": 377,
+  "metadata": {
+    "source_format": ".txt",
+    "source_path": "data/raw/technical/docs/Database_Admin_Guide.txt"
+  }
+}
