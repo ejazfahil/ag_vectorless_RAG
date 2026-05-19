@@ -1,0 +1,41 @@
+# ============================================================
+# In-Memory KNN RAG — PCA + FAISS PQ + HNSW (Khan, 2025)
+# Blueprint Section D.7
+# ============================================================
+
+pipeline:
+  name: "knn_rag"
+  display_name: "In-Memory KNN RAG (PCA+PQ+HNSW)"
+  description: "Khan (2025): sentence-transformers + PCA + FAISS PQ + HNSW ANN"
+
+  # Chunking
+  chunk_size: 512
+  chunk_overlap: 64
+
+  # Embedding — all-MiniLM-L6-v2: 384-dim, ~80MB, 1000+ sentences/sec on M4
+  embedding:
+    model: "sentence-transformers/all-MiniLM-L6-v2"
+    raw_dim: 384
+    pca_dim: 256         # PCA 384 → 256 (Khan step 1)
+    normalize: true
+
+  # FAISS Product Quantization (Khan step 2)
+  # 32 subvectors × 8 bits = 32 bytes/vector vs 1024 bytes raw → 97% compression
+  index:
+    pq_enabled: true
+    pq_subvectors: 32
+    pq_bits: 8
+    top_k: 5
+
+    # HNSW parameters (Khan step 3)
+    hnsw_m: 16              # Neighbours per node (higher = more accurate, more memory)
+    ef_construction: 200    # Build-time accuracy (200 is standard)
+    ef_search: 64           # Query-time accuracy (64 = good accuracy/speed tradeoff)
+
+  # Generation — local Ollama model
+  generation:
+    model: "qwen3:8b"
+    system_prompt: |
+      You are a precise research assistant. Answer using ONLY the retrieved passages.
+      Cite the source document for each claim. If passages are insufficient, say so.
+    max_tokens: 2048

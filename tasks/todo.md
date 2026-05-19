@@ -1,45 +1,45 @@
 # Vectorless RAG Benchmark — Task Tracker
 
-## Current Sprint (Session 3)
+## Current Sprint — Full System Build (new.md explicit)
 
-### 🔴 Critical
-- [x] Install Ollama + start service
-- [x] Pull llama3.2:3b model
-- [ ] Pull qwen3:8b model (retrying — network failed at 6%)
-- [x] Implement Embedding-Free RAG pipeline (Maghakian et al.)
-- [x] Implement Three-Stage Hybrid pipeline (E.1 novel contribution)
-- [x] Add psutil memory/latency telemetry (C.3/C.4)
-- [x] Run BM25 benchmark on finance (5 questions — passed ✅)
-- [ ] Run BM25 benchmark full (all 337 finance questions)
-- [ ] Update all configs to use qwen3:8b once downloaded
-- [ ] Run full benchmark with qwen3:8b
+### 🔴 Critical (new.md explicit requirements)
+- [x] Project scaffolding (Phase 0)
+- [x] 7 RAG pipeline implementations (Phases 2-4)
+- [x] Dataset download + preprocessing: 30 docs, 89K words
+- [x] 370 golden Q&A pairs generated deterministically
+- [x] LLM client: Ollama + Gemini + OpenAI + Anthropic
+- [x] Telemetry module: peak RSS, p50/p95 latency, error taxonomy
+- [x] String metrics: F1/EM/Precision/Recall
+- [x] **[new.md D.7]** In-Memory KNN pipeline — PCA+PQ+HNSW (Khan) → `src/pipelines/knn_rag.py`
+- [x] **[new.md D.7]** `configs/knn.yaml` config
+- [x] **[new.md E.4]** Adaptive Router — ML heuristic + LLM fallback (hybrid mode) → `src/router.py`
+- [x] **[new.md E.4]** `configs/router.yaml` config
+- [x] **[new.md C.1]** RAGAS pointed at Ollama via OpenAI-compat endpoint → `src/evaluation/ragas_eval.py`
+- [x] **[new.md C.3]** Wire F1/EM metrics into benchmark runner output
+- [x] **[new.md A/D]** Added qwen3:4b/8b/14b/32b + deepseek-r1 family to llm_client OLLAMA_MODELS
+- [x] **[new.md B.4]** bm25s library fast-path in BM25RAG (graceful fallback to InMemoryBM25)
+- [x] **[new.md F.3]** MLflow local experiment tracking (`--mlflow` flag in benchmark runner)
+- [x] **[new.md C.6]** Error cross-tab analysis → `scripts/analyze_errors.py`
+- [x] Update benchmark runner with KNN + router + metrics + MLflow
+- [x] Update pyproject.toml with new dependencies
+- [x] Update src/pipelines/__init__.py exports (8 pipelines total)
 
 ### 🟡 Important
-- [ ] Add F1/EM string-match metrics (C.3)
-- [ ] Point RAGAS at Ollama endpoint (C.1)
-- [ ] Error analysis cross-tab: paradigm × query-type (C.6)
+- [ ] Pull qwen3:8b model (retrying — network failed at 6%)
+- [ ] Run full benchmark with qwen3:8b on all 3 domains
 - [ ] Download LegalBench-RAG real data (B.2)
 - [ ] Download FRAMES multi-hop data (B.2)
 
 ### 🟢 Future
-- [ ] In-Memory KNN pipeline — Khan's PCA+PQ+HNSW (D.7)
 - [ ] MCP server pattern (D.5)
-- [ ] MLflow experiment tracking (F.3)
-- [ ] uv migration from pip (F.2)
-- [ ] Adaptive router on RAGRouter-Bench labels (E.4)
 - [ ] Pareto frontier figure: latency × F1 × peak RSS (E.6)
+- [ ] Bootstrap CI for statistical significance (C.5)
 
 ## Completed
-- [x] Project scaffolding (Phase 0)
-- [x] 5 original RAG pipeline implementations (Phase 2)
-- [x] Dataset download + preprocessing: 30 docs, 89K words (Phase 1)
-- [x] 370 golden Q&A pairs generated deterministically
-- [x] LLM client rewrite: Ollama + Gemini + OpenAI + Anthropic
-- [x] Embedding-Free RAG (6th pipeline)
-- [x] Three-Stage Hybrid (7th pipeline — novel contribution)
-- [x] Telemetry module: peak RSS, p50/p95 latency, error taxonomy
-- [x] Benchmark runner rewrite with telemetry integration
-- [x] Git: 4 commits pushed to github.com/ejazfahil/ag_vectorless_RAG
+- [x] All 7 pipelines: PageIndex, Roaming, BM25, Agentic, HybridSoTA, EmbeddingFree, ThreeStageHybrid
+- [x] Full evaluation framework: RAGAS, LLM judge, maintenance, cost tracker
+- [x] BM25 smoke test: 100% success, p50=18.46s, peak RSS=31MB, $0 cost
+- [x] Git: 4 commits pushed
 
 ## BM25 Benchmark Results (5Q smoke test)
 ```
