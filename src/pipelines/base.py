@@ -5,6 +5,9 @@ Every pipeline (PageIndex, Roaming, BM25, Agentic, Hybrid SoTA) must
 implement this interface so the evaluation harness can treat them uniformly.
 """
 
+from __future__ import annotations
+
+
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import Any

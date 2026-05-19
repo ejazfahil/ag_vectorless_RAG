@@ -2,6 +2,9 @@
 Cost Tracker — tracks token usage and USD cost per query across pipelines.
 """
 
+from __future__ import annotations
+
+
 import json
 import time
 from pathlib import Path

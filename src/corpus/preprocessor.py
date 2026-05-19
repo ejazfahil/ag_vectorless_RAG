@@ -6,6 +6,9 @@ Supports PDF, DOCX, TXT, and Markdown formats.
 Outputs a standardized JSON structure that all pipelines consume.
 """
 
+from __future__ import annotations
+
+
 import json
 import os
 import hashlib

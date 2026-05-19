@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from __future__ import annotations
 """
 Main benchmark runner — entry point for the Vectorless RAG Benchmark.
 
@@ -29,19 +30,20 @@ def load_config(config_path: str = "configs/base.yaml") -> dict:
 
 
 def get_pipelines(pipeline_filter: str | None = None):
-    """
-    Instantiate all (or filtered) RAG pipelines.
+    """Instantiate all (or filtered) RAG pipelines."""
+    from src.pipelines.pageindex_rag import PageIndexRAG
+    from src.pipelines.roaming_rag import RoamingRAG
+    from src.pipelines.bm25_rag import BM25RAG
+    from src.pipelines.agentic_rag import AgenticRAG
+    from src.pipelines.hybrid_sota import HybridSoTARAG
 
-    TODO: Import actual pipeline implementations once built.
-    """
-    pipelines = []
-
-    # Pipeline imports will be added as implementations are completed:
-    # from src.pipelines.pageindex_rag import PageIndexRAG
-    # from src.pipelines.roaming_rag import RoamingRAG
-    # from src.pipelines.bm25_rag import BM25RAG
-    # from src.pipelines.agentic_rag import AgenticRAG
-    # from src.pipelines.hybrid_sota import HybridSoTARAG
+    PIPELINE_CLASSES = {
+        "pageindex": PageIndexRAG,
+        "roaming": RoamingRAG,
+        "bm25": BM25RAG,
+        "agentic": AgenticRAG,
+        "hybrid_sota": HybridSoTARAG,
+    }
 
     pipeline_configs = {
         "pageindex": "configs/pageindex.yaml",
@@ -51,6 +53,7 @@ def get_pipelines(pipeline_filter: str | None = None):
         "hybrid_sota": "configs/hybrid_sota.yaml",
     }
 
+    pipelines = []
     for name, config_path in pipeline_configs.items():
         if pipeline_filter and name != pipeline_filter:
             continue
@@ -59,9 +62,9 @@ def get_pipelines(pipeline_filter: str | None = None):
         if config_file.exists():
             with open(config_file, "r") as f:
                 config = yaml.safe_load(f)
-            logger.info(f"Loaded config for {name}")
-            # TODO: Instantiate actual pipeline class
-            # pipelines.append(PipelineClass(config))
+            pipeline_class = PIPELINE_CLASSES[name]
+            pipelines.append(pipeline_class(config))
+            logger.info(f"Loaded pipeline: {name}")
         else:
             logger.warning(f"Config not found: {config_path}")
 

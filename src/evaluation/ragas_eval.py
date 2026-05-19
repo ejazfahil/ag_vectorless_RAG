@@ -3,6 +3,9 @@ RAGAS Evaluator — wraps the RAGAS framework to evaluate RAG pipelines
 on faithfulness, answer relevancy, context precision, and context recall.
 """
 
+from __future__ import annotations
+
+
 import json
 from pathlib import Path
 from dataclasses import dataclass, field

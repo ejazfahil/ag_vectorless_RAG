@@ -8,6 +8,9 @@ Generates 3 types of questions per document:
   3. Needle-in-haystack (30%)
 """
 
+from __future__ import annotations
+
+
 import json
 import random
 from pathlib import Path

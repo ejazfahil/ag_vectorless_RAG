@@ -3,6 +3,9 @@ Evaluation Runner — orchestrates all 4 evaluation dimensions
 across all pipelines and domains.
 """
 
+from __future__ import annotations
+
+
 import json
 import time
 from pathlib import Path
