@@ -37,13 +37,28 @@ class LLMResponse:
 
 # Pricing per 1M tokens (as of May 2026) — Ollama/Gemini Free = $0
 MODEL_PRICING = {
-    # --- Free (local) ---
+    # --- Free (local / Ollama) ---
     "llama3.1": {"input": 0.0, "output": 0.0},
     "llama3.2": {"input": 0.0, "output": 0.0},
+    "llama3.1:8b": {"input": 0.0, "output": 0.0},
+    "llama3.2:3b": {"input": 0.0, "output": 0.0},
     "mistral": {"input": 0.0, "output": 0.0},
+    "mistral:7b": {"input": 0.0, "output": 0.0},
     "qwen2.5": {"input": 0.0, "output": 0.0},
+    "qwen2.5:7b": {"input": 0.0, "output": 0.0},
+    # Qwen3 family (new.md A.2/A.3 — primary reasoning models)
+    "qwen3": {"input": 0.0, "output": 0.0},
+    "qwen3:4b": {"input": 0.0, "output": 0.0},
+    "qwen3:8b": {"input": 0.0, "output": 0.0},
+    "qwen3:14b": {"input": 0.0, "output": 0.0},
+    "qwen3:32b": {"input": 0.0, "output": 0.0},
     "gemma2": {"input": 0.0, "output": 0.0},
+    "gemma2:9b": {"input": 0.0, "output": 0.0},
     "phi3": {"input": 0.0, "output": 0.0},
+    "phi3:mini": {"input": 0.0, "output": 0.0},
+    "deepseek-r1": {"input": 0.0, "output": 0.0},
+    "deepseek-r1:7b": {"input": 0.0, "output": 0.0},
+    "deepseek-r1:14b": {"input": 0.0, "output": 0.0},
     # --- Google Gemini (free tier) ---
     "gemini-2.5-flash": {"input": 0.0, "output": 0.0},
     "gemini-2.0-flash": {"input": 0.0, "output": 0.0},
@@ -56,11 +71,23 @@ MODEL_PRICING = {
     "claude-3-5-sonnet-20241022": {"input": 3.00, "output": 15.00},
 }
 
-# Ollama model aliases (short name -> full pull name)
+# Ollama model short-names / tags — used to detect Ollama provider automatically
 OLLAMA_MODELS = {
+    # Llama family
     "llama3.1", "llama3.2", "llama3.1:8b", "llama3.2:3b",
-    "mistral", "mistral:7b", "qwen2.5", "qwen2.5:7b",
-    "gemma2", "gemma2:9b", "phi3", "phi3:mini",
+    "llama3.1:70b", "llama3.2:1b",
+    # Mistral family
+    "mistral", "mistral:7b", "mistral:7b-instruct",
+    # Qwen2.5 family
+    "qwen2.5", "qwen2.5:7b", "qwen2.5:14b",
+    # Qwen3 family (new.md primary models — blueprint A.2)
+    "qwen3", "qwen3:4b", "qwen3:8b", "qwen3:14b", "qwen3:32b",
+    # Gemma family
+    "gemma2", "gemma2:9b", "gemma2:27b",
+    # Phi family
+    "phi3", "phi3:mini", "phi3:medium",
+    # DeepSeek-R1 distills
+    "deepseek-r1", "deepseek-r1:7b", "deepseek-r1:14b", "deepseek-r1:70b",
 }
 
 

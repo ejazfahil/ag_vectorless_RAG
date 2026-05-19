@@ -23,6 +23,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.utils.logging import setup_logger
 from src.utils.telemetry import TelemetryTracker
+from src.evaluation.string_metrics import compute_metrics_batch  # new.md C.3
 
 
 def load_config(config_path: str = "configs/base.yaml") -> dict:
@@ -40,6 +41,7 @@ def get_pipelines(pipeline_filter: str | None = None):
     from src.pipelines.hybrid_sota import HybridSoTARAG
     from src.pipelines.embedding_free_rag import EmbeddingFreeRAG
     from src.pipelines.three_stage_hybrid import ThreeStageHybridRAG
+    from src.pipelines.knn_rag import KNNInMemoryRAG  # new.md D.7
 
     PIPELINE_CLASSES = {
         "pageindex": PageIndexRAG,
@@ -49,6 +51,7 @@ def get_pipelines(pipeline_filter: str | None = None):
         "hybrid_sota": HybridSoTARAG,
         "embedding_free": EmbeddingFreeRAG,
         "three_stage_hybrid": ThreeStageHybridRAG,
+        "knn": KNNInMemoryRAG,   # new.md D.7
     }
 
     pipeline_configs = {
@@ -59,6 +62,7 @@ def get_pipelines(pipeline_filter: str | None = None):
         "hybrid_sota": "configs/hybrid_sota.yaml",
         "embedding_free": "configs/embedding_free.yaml",
         "three_stage_hybrid": "configs/three_stage_hybrid.yaml",
+        "knn": "configs/knn.yaml",  # new.md D.7
     }
 
     pipelines = []
@@ -107,10 +111,12 @@ def load_golden_qa(qa_path: str, max_questions: int = 0) -> list[dict]:
 def run_benchmark(
     pipeline, domain: str, qa_pairs: list[dict],
     corpus_path: str, output_dir: str,
+    mlflow_enabled: bool = False,
 ):
     """
     Run a single pipeline against a domain's Q&A set.
     Implements the evaluation skeleton from blueprint C.4.
+    Adds F1/EM metrics (C.3) and MLflow tracking (F.3).
     """
     pipeline_name = pipeline.name
     logger.info(f"\n{'='*50}")
@@ -132,11 +138,17 @@ def run_benchmark(
     # Initialize telemetry (blueprint C.4)
     tracker = TelemetryTracker(pipeline_name, domain)
 
+    # Track predictions + references for F1/EM (blueprint C.3)
+    predictions: list[str] = []
+    ground_truths: list[str] = []
+    # Error cross-tab: paradigm × query-type (blueprint C.6)
+    error_crosstab: dict[str, dict[str, int]] = {}
+
     # Run queries with per-query telemetry
     for i, qa in enumerate(qa_pairs):
         question = qa.get("question", "")
-        reference = qa.get("ground_truth_answer", "")
-        q_type = qa.get("question_type", "")
+        reference = qa.get("ground_truth_answer", qa.get("ground_truth", ""))
+        q_type = qa.get("question_type", "unknown")
 
         logger.info(f"  [{i+1}/{len(qa_pairs)}] {question[:70]}...")
 
@@ -144,17 +156,59 @@ def run_benchmark(
             try:
                 result = pipeline.query(question)
                 ctx.set_result(result)
+                predictions.append(result.answer)
+                ground_truths.append(reference)
+                # Cross-tab: no error
+                error_crosstab.setdefault(q_type, {}).setdefault("correct", 0)
+                error_crosstab[q_type]["correct"] += 1
             except Exception as e:
                 logger.error(f"  ✗ Query failed: {e}")
                 ctx.set_error("format_failure")
+                predictions.append("")
+                ground_truths.append(reference)
+                error_crosstab.setdefault(q_type, {}).setdefault("format_failure", 0)
+                error_crosstab[q_type]["format_failure"] += 1
 
     # Save telemetry
     results_dir = Path(output_dir)
     results_dir.mkdir(parents=True, exist_ok=True)
     tracker.save(str(results_dir / f"{pipeline_name}_{domain}_telemetry.jsonl"))
 
+    # Compute F1/EM metrics (blueprint C.3)
+    string_metrics: dict = {}
+    if predictions and ground_truths:
+        string_metrics = compute_metrics_batch(predictions, ground_truths)
+        logger.info(
+            f"  String metrics — EM: {string_metrics['exact_match']:.4f} | "
+            f"F1: {string_metrics['f1']:.4f} | "
+            f"P: {string_metrics['precision']:.4f} | "
+            f"R: {string_metrics['recall']:.4f}"
+        )
+
+    # Save F1/EM results
+    metrics_path = results_dir / f"{pipeline_name}_{domain}_string_metrics.json"
+    with open(metrics_path, "w") as f:
+        json.dump({
+            "pipeline": pipeline_name,
+            "domain": domain,
+            "n": len(predictions),
+            "metrics": string_metrics,
+        }, f, indent=2)
+
+    # Save error cross-tab (blueprint C.6)
+    crosstab_path = results_dir / f"{pipeline_name}_{domain}_error_crosstab.json"
+    with open(crosstab_path, "w") as f:
+        json.dump({
+            "pipeline": pipeline_name,
+            "domain": domain,
+            "error_crosstab": error_crosstab,
+        }, f, indent=2)
+
     # Print summary
     summary = tracker.get_summary()
+    summary["string_metrics"] = string_metrics
+    summary["error_crosstab"] = error_crosstab
+
     logger.info(f"\n  ── Results: {pipeline_name} on {domain} ──")
     logger.info(f"  Questions: {summary['n']}")
     logger.info(f"  Success rate: {summary.get('success_rate', 0):.1%}")
@@ -170,7 +224,48 @@ def run_benchmark(
     if summary.get("cost"):
         logger.info(f"  Cost: ${summary['cost']['total_usd']:.6f} total")
 
+    # MLflow tracking (blueprint F.3)
+    if mlflow_enabled:
+        _log_to_mlflow(pipeline_name, domain, summary, string_metrics, report)
+
     return summary
+
+
+def _log_to_mlflow(pipeline_name: str, domain: str, summary: dict,
+                   string_metrics: dict, ingest_report) -> None:
+    """Log benchmark results to local MLflow (blueprint F.3)."""
+    try:
+        import mlflow
+        mlflow.set_tracking_uri(f"file:{PROJECT_ROOT}/mlruns")
+        run_name = f"{pipeline_name}_{domain}"
+        with mlflow.start_run(run_name=run_name):
+            mlflow.log_params({
+                "pipeline": pipeline_name,
+                "domain": domain,
+                "n_questions": summary.get("n", 0),
+                "n_docs": getattr(ingest_report, "num_documents", 0),
+            })
+            metrics_to_log = {
+                "success_rate": summary.get("success_rate", 0),
+                "f1": string_metrics.get("f1", 0),
+                "exact_match": string_metrics.get("exact_match", 0),
+                "precision": string_metrics.get("precision", 0),
+                "recall": string_metrics.get("recall", 0),
+                "ingestion_time_s": getattr(ingest_report, "ingestion_time_seconds", 0),
+            }
+            if summary.get("latency"):
+                metrics_to_log["p50_latency_s"] = summary["latency"]["p50_s"]
+                metrics_to_log["p95_latency_s"] = summary["latency"]["p95_s"]
+            if summary.get("memory"):
+                metrics_to_log["peak_rss_mb"] = summary["memory"]["peak_rss_mb"]
+            if summary.get("cost"):
+                metrics_to_log["total_cost_usd"] = summary["cost"]["total_usd"]
+            mlflow.log_metrics(metrics_to_log)
+        logger.info(f"  MLflow: logged run '{run_name}'")
+    except ImportError:
+        logger.debug("MLflow not installed, skipping experiment tracking")
+    except Exception as e:
+        logger.warning(f"MLflow logging failed: {e}")
 
 
 def main():
@@ -194,6 +289,7 @@ Examples:
         choices=[
             "pageindex", "roaming", "bm25", "agentic",
             "hybrid_sota", "embedding_free", "three_stage_hybrid",
+            "knn",  # new.md D.7
         ],
         help="Run only a specific pipeline (default: all)",
     )
@@ -209,6 +305,10 @@ Examples:
         "--output-dir", type=str, default="results/",
         help="Directory for output results",
     )
+    parser.add_argument(
+        "--mlflow", action="store_true",
+        help="Enable MLflow experiment tracking (blueprint F.3)",
+    )
 
     args = parser.parse_args()
 
@@ -220,9 +320,10 @@ Examples:
     logger.info("  Fully Local — Zero API Cost")
     logger.info("=" * 60)
     logger.info(f"  Domain: {args.domain}")
-    logger.info(f"  Pipeline: {args.pipeline or 'all (7 pipelines)'}")
+    logger.info(f"  Pipeline: {args.pipeline or 'all (8 pipelines)'}")
     logger.info(f"  Max questions: {args.max_questions or 'all'}")
     logger.info(f"  Output: {args.output_dir}")
+    logger.info(f"  MLflow: {'enabled' if args.mlflow else 'disabled'}")
     logger.info("=" * 60)
 
     # Domain paths
@@ -263,6 +364,7 @@ Examples:
             summary = run_benchmark(
                 pipeline, domain, qa_pairs,
                 domain_cfg["corpus"], args.output_dir,
+                mlflow_enabled=args.mlflow,
             )
             if summary:
                 all_summaries.append(summary)
