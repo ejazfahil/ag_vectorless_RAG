@@ -1,0 +1,28 @@
+# PageIndex Pipeline Configuration
+pipeline:
+  name: "pageindex"
+  display_name: "PageIndex (Hierarchical Tree RAG)"
+  description: "VectifyAI's hierarchical tree-based vectorless RAG"
+
+  # --- Ingestion ---
+  ingestion:
+    model: "gpt-4o"
+    max_pages_per_node: 10
+    add_node_summary: true
+    tree_output_format: "json"
+
+  # --- Retrieval ---
+  retrieval:
+    model: "gpt-4o"
+    max_tree_depth: 5
+    max_retrieved_pages: 10
+    reasoning_strategy: "top_down"  # top_down | breadth_first
+
+  # --- Generation ---
+  generation:
+    model: "gpt-4o"
+    system_prompt: |
+      You are a precise research assistant. Answer the question using ONLY
+      the provided context. If the context does not contain enough information,
+      say so explicitly. Always cite the specific section/page you used.
+    max_tokens: 2048

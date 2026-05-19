@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Environment / Secrets
+.env
+*.key
+
+# Data (raw docs can be large; keep processed + golden in git)
+data/raw/
+
+# Results (raw experiment outputs can be huge)
+results/raw/
+
+# Elasticsearch data
+elasticsearch_data/
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
+
+# MLflow / W&B
+mlruns/
+wandb/
+
+# Logs
+logs/
+*.log

@@ -1,0 +1,37 @@
+# BM25 Lexical Search Pipeline Configuration
+pipeline:
+  name: "bm25"
+  display_name: "BM25 Lexical RAG (Elasticsearch)"
+  description: "Traditional keyword-based retrieval with TF-IDF scoring"
+
+  # --- Ingestion ---
+  ingestion:
+    chunk_size: 512
+    chunk_overlap: 64
+    chunking_strategy: "recursive"   # recursive | sentence | paragraph
+    metadata_fields:
+      - "source_file"
+      - "domain"
+      - "section_title"
+      - "page_number"
+
+  # --- Retrieval ---
+  retrieval:
+    top_k: 5
+    search_type: "multi_match"       # match | multi_match | bool
+    field_boost:
+      title: 2.0
+      section_title: 1.5
+      content: 1.0
+    minimum_should_match: "30%"
+    metadata_filters_enabled: true
+
+  # --- Generation ---
+  generation:
+    model: "gpt-4o"
+    system_prompt: |
+      You are a precise research assistant. Answer the question using ONLY
+      the provided retrieved passages. Cite the source document and section
+      for each claim. If the passages don't contain sufficient information,
+      say "Insufficient context."
+    max_tokens: 2048

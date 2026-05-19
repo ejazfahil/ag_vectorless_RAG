@@ -1,0 +1,66 @@
+# Hybrid SoTA Vectorless RAG — OUR SYSTEM
+pipeline:
+  name: "hybrid_sota"
+  display_name: "Hybrid Vectorless RAG (Ours)"
+  description: >
+    Novel hybrid system combining adaptive query routing,
+    hierarchical tree navigation, BM25 lexical fallback,
+    and agentic verification — the best of all paradigms.
+
+  # --- Query Router ---
+  router:
+    model: "gpt-4o"
+    classification_prompt: |
+      Classify the following query into one of these categories:
+      - STRUCTURED: The answer likely resides in a specific section/table
+        of a well-organized document (use tree navigation)
+      - KEYWORD: The query contains specific terms, codes, or exact
+        phrases that need precise matching (use BM25 search)
+      - COMPLEX: The query requires multi-hop reasoning across multiple
+        sections or documents (use both strategies + fusion)
+      Respond with exactly one of: STRUCTURED, KEYWORD, COMPLEX
+    temperature: 0.0
+
+  # --- Hierarchical Tree Component ---
+  tree:
+    model: "gpt-4o"
+    max_pages_per_node: 10
+    add_node_summary: true
+    max_tree_depth: 5
+
+  # --- BM25 Component ---
+  bm25:
+    chunk_size: 512
+    chunk_overlap: 64
+    top_k: 5
+    field_boost:
+      title: 2.0
+      content: 1.0
+
+  # --- Fusion (for COMPLEX queries) ---
+  fusion:
+    strategy: "reciprocal_rank"      # reciprocal_rank | weighted_sum
+    tree_weight: 0.6
+    bm25_weight: 0.4
+    max_combined_contexts: 8
+
+  # --- Verification Agent ---
+  verifier:
+    model: "gpt-4o"
+    max_retries: 2
+    verification_checks:
+      - "answer_grounded_in_context"
+      - "no_hallucination"
+      - "question_fully_addressed"
+    fallback_on_failure: "expand_search"  # expand_search | escalate
+
+  # --- Generation ---
+  generation:
+    model: "gpt-4o"
+    system_prompt: |
+      You are a state-of-the-art research assistant powered by a hybrid
+      vectorless retrieval system. Answer using ONLY the provided context.
+      For each claim, cite the exact source (document name, section, page).
+      If context is insufficient, say so clearly.
+    max_tokens: 2048
+    temperature: 0.0

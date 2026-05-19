@@ -1,0 +1,70 @@
+# ============================================================
+# Base Configuration — Shared across all pipelines
+# ============================================================
+
+project:
+  name: "vectorless-rag-benchmark"
+  version: "0.1.0"
+
+# --- LLM Settings ---
+llm:
+  default_model: "gpt-4o"
+  judge_model: "gpt-4o"           # Separate model for LLM-as-a-Judge
+  temperature: 0.0                 # Deterministic for reproducibility
+  max_tokens: 4096
+  timeout: 120                     # seconds
+
+# --- Corpus Settings ---
+corpus:
+  domains:
+    - name: "finance"
+      raw_path: "data/raw/finance/"
+      processed_path: "data/processed/finance/"
+      golden_qa_path: "data/golden_qa/finance.json"
+    - name: "legal"
+      raw_path: "data/raw/legal/"
+      processed_path: "data/processed/legal/"
+      golden_qa_path: "data/golden_qa/legal.json"
+    - name: "technical"
+      raw_path: "data/raw/technical/"
+      processed_path: "data/processed/technical/"
+      golden_qa_path: "data/golden_qa/technical.json"
+
+# --- Evaluation Settings ---
+evaluation:
+  golden_qa_path: "data/golden_qa/"
+  num_qa_pairs_per_domain: 50
+  ragas:
+    metrics:
+      - faithfulness
+      - answer_relevancy
+      - context_precision
+      - context_recall
+  llm_judge:
+    model: "gpt-4o"
+    cot_prompting: true
+    position_bias_mitigation: true
+    calibration_set_size: 50
+  cost_tracking:
+    enabled: true
+    log_path: "results/cost_log.jsonl"
+  maintenance:
+    incremental_docs_count: 10
+
+# --- Elasticsearch (for BM25 pipeline) ---
+elasticsearch:
+  url: "http://localhost:9200"
+  index_prefix: "vectorless_rag"
+  bm25:
+    chunk_size: 512
+    chunk_overlap: 64
+    field_boost:
+      title: 2.0
+      summary: 1.5
+      content: 1.0
+
+# --- Results ---
+results:
+  output_dir: "results/"
+  raw_dir: "results/raw/"
+  figures_dir: "results/figures/"

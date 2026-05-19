@@ -1,0 +1,41 @@
+# Agentic Search-First Pipeline Configuration
+pipeline:
+  name: "agentic"
+  display_name: "Agentic Search-First RAG"
+  description: "Multi-agent pipeline using massive context windows"
+
+  # --- Agent Architecture ---
+  agents:
+    decomposer:
+      model: "gpt-4o"
+      role: "Break complex queries into sub-questions"
+      max_sub_queries: 4
+    searcher:
+      model: "gpt-4o"
+      role: "Search and retrieve relevant document sections"
+      tools:
+        - "read_document"
+        - "search_corpus"
+        - "skim_document"
+      max_context_tokens: 128000     # Leverage large context windows
+    synthesizer:
+      model: "gpt-4o"
+      role: "Synthesize findings into a coherent answer"
+    verifier:
+      model: "gpt-4o"
+      role: "Verify answer is grounded in retrieved context"
+      verification_mode: "strict"    # strict | lenient
+
+  # --- Workflow ---
+  workflow:
+    max_iterations: 3               # max agent loops
+    early_stop_on_confidence: 0.9
+    framework: "langgraph"          # langgraph | crewai
+
+  # --- Generation ---
+  generation:
+    system_prompt: |
+      You are a multi-agent research system. Decompose the question,
+      search for evidence, synthesize an answer, and verify it is
+      grounded. Provide citations for every claim.
+    max_tokens: 4096

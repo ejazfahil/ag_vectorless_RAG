@@ -1,0 +1,34 @@
+# Roaming RAG Pipeline Configuration
+pipeline:
+  name: "roaming"
+  display_name: "Roaming RAG (Agentic Navigation)"
+  description: "Section-level agentic document navigation"
+
+  # --- Ingestion ---
+  ingestion:
+    parser: "hierarchical"          # hierarchical | flat
+    section_id_format: "dot_notation"  # e.g., "3.2.1"
+    min_section_length: 100         # chars — skip trivial sections
+    max_section_length: 5000        # chars — split overly long sections
+    include_metadata: true          # title, page range, word count
+
+  # --- Retrieval ---
+  retrieval:
+    model: "gpt-4o"
+    max_roaming_steps: 8            # max expand() calls per query
+    initial_view: "outline"         # outline | first_page | summary
+    expand_strategy: "selective"    # selective | greedy
+    agent_tools:
+      - "view_outline"
+      - "expand_section"
+      - "search_within_section"
+      - "get_section_summary"
+
+  # --- Generation ---
+  generation:
+    model: "gpt-4o"
+    system_prompt: |
+      You are a research agent navigating a structured document. Use the
+      provided tools to roam through the document hierarchy and find the
+      information needed to answer the question. Cite section IDs.
+    max_tokens: 2048
