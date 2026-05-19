@@ -6,9 +6,11 @@ from .bm25_rag import BM25RAG
 from .agentic_rag import AgenticRAG
 from .hybrid_sota import HybridSoTARAG
 from .embedding_free_rag import EmbeddingFreeRAG
+from .three_stage_hybrid import ThreeStageHybridRAG
 
 __all__ = [
     "RAGPipeline", "RAGResponse",
     "PageIndexRAG", "RoamingRAG", "BM25RAG",
     "AgenticRAG", "HybridSoTARAG", "EmbeddingFreeRAG",
+    "ThreeStageHybridRAG",
 ]

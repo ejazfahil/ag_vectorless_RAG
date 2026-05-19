@@ -6,10 +6,12 @@ Main benchmark runner — entry point for the Vectorless RAG Benchmark.
 Usage:
     python scripts/run_benchmark.py --domain finance
     python scripts/run_benchmark.py --domain all
-    python scripts/run_benchmark.py --pipeline hybrid_sota --domain legal
+    python scripts/run_benchmark.py --pipeline three_stage_hybrid --domain finance
+    python scripts/run_benchmark.py --pipeline bm25 --domain finance --max-questions 10
 """
 
 import argparse
+import json
 import sys
 import yaml
 from pathlib import Path
@@ -20,7 +22,7 @@ PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.utils.logging import setup_logger
-from src.evaluation.runner import EvaluationRunner
+from src.utils.telemetry import TelemetryTracker
 
 
 def load_config(config_path: str = "configs/base.yaml") -> dict:
@@ -37,6 +39,7 @@ def get_pipelines(pipeline_filter: str | None = None):
     from src.pipelines.agentic_rag import AgenticRAG
     from src.pipelines.hybrid_sota import HybridSoTARAG
     from src.pipelines.embedding_free_rag import EmbeddingFreeRAG
+    from src.pipelines.three_stage_hybrid import ThreeStageHybridRAG
 
     PIPELINE_CLASSES = {
         "pageindex": PageIndexRAG,
@@ -45,6 +48,7 @@ def get_pipelines(pipeline_filter: str | None = None):
         "agentic": AgenticRAG,
         "hybrid_sota": HybridSoTARAG,
         "embedding_free": EmbeddingFreeRAG,
+        "three_stage_hybrid": ThreeStageHybridRAG,
     }
 
     pipeline_configs = {
@@ -54,6 +58,7 @@ def get_pipelines(pipeline_filter: str | None = None):
         "agentic": "configs/agentic.yaml",
         "hybrid_sota": "configs/hybrid_sota.yaml",
         "embedding_free": "configs/embedding_free.yaml",
+        "three_stage_hybrid": "configs/three_stage_hybrid.yaml",
     }
 
     pipelines = []
@@ -74,15 +79,109 @@ def get_pipelines(pipeline_filter: str | None = None):
     return pipelines
 
 
+def load_golden_qa(qa_path: str, max_questions: int = 0) -> list[dict]:
+    """Load golden Q&A from JSONL."""
+    full_path = PROJECT_ROOT / qa_path
+    if not full_path.exists():
+        logger.warning(f"Golden Q&A not found: {full_path}")
+        return []
+
+    qa_pairs = []
+    with open(full_path) as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                qa_pairs.append(json.loads(line))
+            except json.JSONDecodeError:
+                continue
+
+    if max_questions > 0:
+        qa_pairs = qa_pairs[:max_questions]
+
+    logger.info(f"Loaded {len(qa_pairs)} Q&A pairs from {full_path.name}")
+    return qa_pairs
+
+
+def run_benchmark(
+    pipeline, domain: str, qa_pairs: list[dict],
+    corpus_path: str, output_dir: str,
+):
+    """
+    Run a single pipeline against a domain's Q&A set.
+    Implements the evaluation skeleton from blueprint C.4.
+    """
+    pipeline_name = pipeline.name
+    logger.info(f"\n{'='*50}")
+    logger.info(f"  Pipeline: {pipeline_name} | Domain: {domain}")
+    logger.info(f"  Questions: {len(qa_pairs)}")
+    logger.info(f"{'='*50}")
+
+    # Ingest corpus
+    try:
+        report = pipeline.ingest(str(PROJECT_ROOT / corpus_path))
+        logger.info(
+            f"  Ingested: {report.num_documents} docs in "
+            f"{report.ingestion_time_seconds:.2f}s"
+        )
+    except Exception as e:
+        logger.error(f"  Ingestion failed: {e}")
+        return None
+
+    # Initialize telemetry (blueprint C.4)
+    tracker = TelemetryTracker(pipeline_name, domain)
+
+    # Run queries with per-query telemetry
+    for i, qa in enumerate(qa_pairs):
+        question = qa.get("question", "")
+        reference = qa.get("ground_truth_answer", "")
+        q_type = qa.get("question_type", "")
+
+        logger.info(f"  [{i+1}/{len(qa_pairs)}] {question[:70]}...")
+
+        with tracker.track_query(question, reference, q_type) as ctx:
+            try:
+                result = pipeline.query(question)
+                ctx.set_result(result)
+            except Exception as e:
+                logger.error(f"  ✗ Query failed: {e}")
+                ctx.set_error("format_failure")
+
+    # Save telemetry
+    results_dir = Path(output_dir)
+    results_dir.mkdir(parents=True, exist_ok=True)
+    tracker.save(str(results_dir / f"{pipeline_name}_{domain}_telemetry.jsonl"))
+
+    # Print summary
+    summary = tracker.get_summary()
+    logger.info(f"\n  ── Results: {pipeline_name} on {domain} ──")
+    logger.info(f"  Questions: {summary['n']}")
+    logger.info(f"  Success rate: {summary.get('success_rate', 0):.1%}")
+    if summary.get("latency"):
+        lat = summary["latency"]
+        logger.info(f"  Latency: p50={lat['p50_s']:.2f}s | p95={lat['p95_s']:.2f}s | mean={lat['mean_s']:.2f}s")
+    if summary.get("memory"):
+        mem = summary["memory"]
+        logger.info(f"  Memory: peak RSS={mem['peak_rss_mb']:.0f}MB | mean Δ={mem['mean_delta_mb']:.1f}MB")
+    if summary.get("tokens"):
+        tok = summary["tokens"]
+        logger.info(f"  Tokens: total={tok['total']:,} | mean/query={tok['mean_per_query']:.0f}")
+    if summary.get("cost"):
+        logger.info(f"  Cost: ${summary['cost']['total_usd']:.6f} total")
+
+    return summary
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Vectorless RAG Benchmark Suite",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python scripts/run_benchmark.py --domain finance
-  python scripts/run_benchmark.py --domain all --pipeline hybrid_sota
-  python scripts/run_benchmark.py --domain legal --verbose
+  python scripts/run_benchmark.py --domain finance --pipeline bm25
+  python scripts/run_benchmark.py --domain all --pipeline three_stage_hybrid
+  python scripts/run_benchmark.py --domain finance --max-questions 10 -v
         """,
     )
     parser.add_argument(
@@ -92,8 +191,15 @@ Examples:
     )
     parser.add_argument(
         "--pipeline", type=str, default=None,
-        choices=["pageindex", "roaming", "bm25", "agentic", "hybrid_sota", "embedding_free"],
+        choices=[
+            "pageindex", "roaming", "bm25", "agentic",
+            "hybrid_sota", "embedding_free", "three_stage_hybrid",
+        ],
         help="Run only a specific pipeline (default: all)",
+    )
+    parser.add_argument(
+        "--max-questions", type=int, default=0,
+        help="Max questions per domain (0 = all)",
     )
     parser.add_argument(
         "--verbose", "-v", action="store_true",
@@ -108,50 +214,66 @@ Examples:
 
     # Setup
     setup_logger(level="DEBUG" if args.verbose else "INFO")
-    config = load_config()
-    config["results"]["output_dir"] = args.output_dir
 
     logger.info("=" * 60)
     logger.info("  Vectorless RAG Benchmark Suite")
+    logger.info("  Fully Local — Zero API Cost")
     logger.info("=" * 60)
     logger.info(f"  Domain: {args.domain}")
-    logger.info(f"  Pipeline: {args.pipeline or 'all'}")
+    logger.info(f"  Pipeline: {args.pipeline or 'all (7 pipelines)'}")
+    logger.info(f"  Max questions: {args.max_questions or 'all'}")
     logger.info(f"  Output: {args.output_dir}")
     logger.info("=" * 60)
+
+    # Domain paths
+    DOMAIN_CONFIGS = {
+        "finance": {
+            "corpus": "data/processed/finance",
+            "golden_qa": "data/golden_qa/finance_golden_qa.jsonl",
+        },
+        "legal": {
+            "corpus": "data/processed/legal",
+            "golden_qa": "data/golden_qa/legal_golden_qa.jsonl",
+        },
+        "technical": {
+            "corpus": "data/processed/technical",
+            "golden_qa": "data/golden_qa/technical_golden_qa.jsonl",
+        },
+    }
 
     # Get pipelines
     pipelines = get_pipelines(args.pipeline)
     if not pipelines:
-        logger.warning(
-            "No pipelines instantiated yet. "
-            "Implement pipeline classes in src/pipelines/ first."
-        )
-        logger.info("Project scaffolding is complete. Next steps:")
-        logger.info("  1. Add documents to data/raw/{domain}/")
-        logger.info("  2. Implement pipeline classes")
-        logger.info("  3. Generate golden Q&A pairs")
-        logger.info("  4. Run this benchmark again")
+        logger.error("No pipelines loaded. Check config files exist.")
         return
 
-    # Run evaluation
-    runner = EvaluationRunner(config)
     domains = ["finance", "legal", "technical"] if args.domain == "all" else [args.domain]
+    all_summaries = []
 
     for domain in domains:
-        domain_config = next(
-            (d for d in config["corpus"]["domains"] if d["name"] == domain), None
-        )
-        if not domain_config:
-            logger.error(f"Domain {domain} not found in config")
+        domain_cfg = DOMAIN_CONFIGS[domain]
+
+        # Load Q&A
+        qa_pairs = load_golden_qa(domain_cfg["golden_qa"], args.max_questions)
+        if not qa_pairs:
+            logger.warning(f"No Q&A pairs for {domain}, skipping")
             continue
 
-        logger.info(f"\n--- Domain: {domain} ---")
-        runner.run(
-            pipelines=pipelines,
-            golden_qa_path=domain_config["golden_qa_path"],
-            corpus_path=domain_config["processed_path"],
-            domain=domain,
-        )
+        for pipeline in pipelines:
+            summary = run_benchmark(
+                pipeline, domain, qa_pairs,
+                domain_cfg["corpus"], args.output_dir,
+            )
+            if summary:
+                all_summaries.append(summary)
+
+    # Save combined summary
+    if all_summaries:
+        summary_path = Path(args.output_dir) / "benchmark_summary.json"
+        summary_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(summary_path, "w") as f:
+            json.dump(all_summaries, f, indent=2)
+        logger.info(f"\n📊 Combined summary: {summary_path}")
 
     logger.info("\n✅ Benchmark complete! Results in: " + args.output_dir)
 

@@ -1,0 +1,32 @@
+# ============================================================
+# Three-Stage Hybrid RAG — Blueprint E.1 (Novel Contribution)
+# ============================================================
+# BM25 → PageIndex Tree → Embedding-Free Levenshtein
+# With iterative multi-hop (E.2) + self-evaluation (E.3)
+
+pipeline:
+  name: "three_stage_hybrid"
+  description: "Three-Stage Hybrid: BM25 → PageIndex → Embedding-Free (Novel)"
+
+  # Model selection
+  model: "qwen3:8b"             # Strong reasoning model (Stages 2, multi-hop, self-eval)
+  quote_model: "llama3.2:3b"    # Fast extraction model (Stage 3)
+
+  # Stage 1: BM25 Lexical Recall
+  bm25_top_k: 50                # Blueprint E.1: "bm25s top-50 (~1 ms)"
+  bm25_k1: 1.5
+  bm25_b: 0.75
+
+  # Stage 2: PageIndex Tree Reasoning
+  max_tree_sections: 5          # Max sections to expand from tree
+
+  # Stage 3: Embedding-Free Quote Extraction
+  window_size: 5                # ±w sentences around Levenshtein anchor
+
+  # E.2: Iterative Multi-Hop
+  enable_multi_hop: true
+  max_hops: 3                   # Max retrieval iterations
+
+  # E.3: Self-Evaluation (CRAG-style)
+  enable_self_eval: true
+  faithfulness_threshold: 0.7   # Re-retrieve if below this

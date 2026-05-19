@@ -1,0 +1,44 @@
+{
+  "pipeline": "bm25",
+  "domain": "finance",
+  "n": 5,
+  "success_rate": 1.0,
+  "latency": {
+    "mean_s": 17.891333275,
+    "median_s": 18.455152875000003,
+    "p50_s": 18.455152875000003,
+    "p95_s": 19.390725508200003,
+    "min_s": 15.135608666999996,
+    "max_s": 19.497871250000003
+  },
+  "memory": {
+    "mean_delta_mb": -4.030464,
+    "max_delta_mb": 6.651904,
+    "peak_rss_mb": 30.588928
+  },
+  "tokens": {
+    "total": 21730,
+    "mean_per_query": 4346
+  },
+  "cost": {
+    "total_usd": 0.0,
+    "mean_per_query_usd": 0.0
+  },
+  "errors": {
+    "none": 5
+  },
+  "latency_by_type": {
+    "factual_numeric": {
+      "mean_s": 17.048875603999996,
+      "n": 2
+    },
+    "factual": {
+      "mean_s": 17.405891042,
+      "n": 1
+    },
+    "trend_analysis": {
+      "mean_s": 18.976512062500003,
+      "n": 2
+    }
+  }
+}
