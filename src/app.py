@@ -526,6 +526,27 @@ with tab_insights:
             df_runs = pd.DataFrame(runs)
             df_queries = pd.DataFrame(queries)
             
+            # Filter out incomplete or interrupted benchmark runs (where latency/memory RSS are missing)
+            if not df_runs.empty:
+                df_runs = df_runs.dropna(subset=["mean_latency", "peak_rss"])
+            
+            # Fallback if no completed runs remain
+            if df_runs.empty:
+                df_runs = pd.DataFrame([{
+                    "id": "fallback_mock",
+                    "timestamp": "2026-05-20T00:00:00",
+                    "pipeline_name": "bm25",
+                    "domain": "finance",
+                    "num_questions": 0,
+                    "success_rate": 0.0,
+                    "mean_latency": 0.0,
+                    "p50_latency": 0.0,
+                    "p95_latency": 0.0,
+                    "peak_rss": 20.0,
+                    "total_tokens": 0,
+                    "total_cost": 0.0
+                }])
+            
             # Aggregate KPIs calculations
             avg_success = df_runs["success_rate"].mean()
             mean_latency = df_runs["mean_latency"].mean()
