@@ -112,6 +112,8 @@ class PageIndexRAG(RAGPipeline):
         """Build hierarchical tree index for each document."""
         start = time.perf_counter()
         corpus_dir = Path(corpus_path)
+        self._index_dir = str(corpus_dir / ".pageindex_trees")
+        os.makedirs(self._index_dir, exist_ok=True)
 
         # Load processed documents
         manifest_path = corpus_dir / "manifest.json"
@@ -123,6 +125,7 @@ class PageIndexRAG(RAGPipeline):
             doc_files = sorted(corpus_dir.glob("*.json"))
 
         ingestion_cost = 0.0
+        index_size = 0
         for doc_file in doc_files:
             if doc_file.name == "manifest.json":
                 continue
@@ -132,26 +135,25 @@ class PageIndexRAG(RAGPipeline):
             doc_id = doc_data.get("doc_id", doc_file.stem)
             self._documents[doc_id] = doc_data
 
-            # Build tree using LLM
-            content = doc_data.get("full_text", "")[:8000]  # Truncate for API
-            tree = self._build_tree(doc_data.get("title", doc_file.stem), content)
+            # Check if saved tree exists
+            tree_path = os.path.join(self._index_dir, f"{doc_id}_tree.json")
+            if os.path.exists(tree_path):
+                logger.debug(f"Loading cached PageIndex tree for {doc_id} from {tree_path}...")
+                with open(tree_path) as tf:
+                    tree = json.load(tf)
+            else:
+                # Build tree using LLM
+                content = doc_data.get("full_text", "")[:8000]  # Truncate for API
+                tree = self._build_tree(doc_data.get("title", doc_file.stem), content)
+                with open(tree_path, "w") as tf:
+                    json.dump(tree, tf, indent=2)
+                logger.debug(f"Built tree for {doc_id} and saved to {tree_path}: {len(json.dumps(tree))} chars")
+
             self._trees[doc_id] = tree
+            index_size += os.path.getsize(tree_path)
             ingestion_cost += self._tree_client.cumulative_cost
 
-            logger.debug(f"Built tree for {doc_id}: {len(json.dumps(tree))} chars")
-
         elapsed = time.perf_counter() - start
-
-        # Save trees to disk
-        self._index_dir = str(corpus_dir / ".pageindex_trees")
-        os.makedirs(self._index_dir, exist_ok=True)
-        index_size = 0
-        for doc_id, tree in self._trees.items():
-            tree_path = os.path.join(self._index_dir, f"{doc_id}_tree.json")
-            with open(tree_path, "w") as f:
-                json.dump(tree, f, indent=2)
-            index_size += os.path.getsize(tree_path)
-
         self._is_ingested = True
         logger.info(f"PageIndex ingestion: {len(self._trees)} trees built in {elapsed:.1f}s")
 

@@ -1,0 +1,41 @@
+{
+  "pipeline": "three_stage_hybrid",
+  "domain": "finance",
+  "n": 3,
+  "success_rate": 0.6666666666666666,
+  "latency": {
+    "mean_s": 633.7780664163333,
+    "median_s": 638.955648333,
+    "p50_s": 638.955648333,
+    "p95_s": 942.5017062333,
+    "min_s": 286.14950491600007,
+    "max_s": 976.229046
+  },
+  "memory": {
+    "mean_delta_mb": -6.853973333333333,
+    "max_delta_mb": -2.818048,
+    "peak_rss_mb": 22.413312
+  },
+  "tokens": {
+    "total": 140455,
+    "mean_per_query": 46818.333333333336
+  },
+  "cost": {
+    "total_usd": 0.0,
+    "mean_per_query_usd": 0.0
+  },
+  "errors": {
+    "none": 2,
+    "format_failure": 1
+  },
+  "latency_by_type": {
+    "factual_numeric": {
+      "mean_s": 462.55257662450003,
+      "n": 2
+    },
+    "factual": {
+      "mean_s": 976.229046,
+      "n": 1
+    }
+  }
+}

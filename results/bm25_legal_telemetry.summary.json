@@ -1,0 +1,36 @@
+{
+  "pipeline": "bm25",
+  "domain": "legal",
+  "n": 2,
+  "success_rate": 1.0,
+  "latency": {
+    "mean_s": 21.746099917000002,
+    "median_s": 21.746099917000002,
+    "p50_s": 21.746099917000002,
+    "p95_s": 28.332989917299997,
+    "min_s": 14.42733325,
+    "max_s": 29.064866584
+  },
+  "memory": {
+    "mean_delta_mb": -1.8022399999999998,
+    "max_delta_mb": 1.572864,
+    "peak_rss_mb": 30.982144
+  },
+  "tokens": {
+    "total": 6543,
+    "mean_per_query": 3271.5
+  },
+  "cost": {
+    "total_usd": 0.0,
+    "mean_per_query_usd": 0.0
+  },
+  "errors": {
+    "none": 2
+  },
+  "latency_by_type": {
+    "factual_descriptive": {
+      "mean_s": 21.746099917000002,
+      "n": 2
+    }
+  }
+}

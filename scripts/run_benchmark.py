@@ -21,7 +21,7 @@ from loguru import logger
 PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.utils.logging import setup_logger
+from src.utils.logger_setup import setup_logger
 from src.utils.telemetry import TelemetryTracker
 
 
@@ -130,7 +130,23 @@ def run_benchmark(
         return None
 
     # Initialize telemetry (blueprint C.4)
-    tracker = TelemetryTracker(pipeline_name, domain)
+    import uuid
+    run_id = str(uuid.uuid4())
+    tracker = TelemetryTracker(pipeline_name, domain, run_id=run_id)
+
+    # Log skeleton run to SQLite database to satisfy FOREIGN KEY constraint for queries
+    try:
+        from src.utils.database import db_manager
+        from datetime import datetime
+        skeleton_run = {
+            "id": run_id,
+            "timestamp": datetime.utcnow().isoformat(),
+            "pipeline_name": pipeline_name,
+            "domain": domain,
+        }
+        db_manager.insert_run(skeleton_run)
+    except Exception as e:
+        logger.error(f"Failed to log skeleton run to SQLite database: {e}")
 
     # Run queries with per-query telemetry
     for i, qa in enumerate(qa_pairs):
@@ -155,6 +171,34 @@ def run_benchmark(
 
     # Print summary
     summary = tracker.get_summary()
+
+    # Log run metadata to SQLite database
+    try:
+        from src.utils.database import db_manager
+        from datetime import datetime
+
+        latency = summary.get("latency", {})
+        memory = summary.get("memory", {})
+        tokens = summary.get("tokens", {})
+        cost = summary.get("cost", {})
+
+        run_data = {
+            "id": run_id,
+            "timestamp": datetime.utcnow().isoformat(),
+            "pipeline_name": pipeline_name,
+            "domain": domain,
+            "num_questions": summary.get("n", 0),
+            "success_rate": summary.get("success_rate", 0.0),
+            "mean_latency": latency.get("mean_s", 0.0),
+            "p50_latency": latency.get("p50_s", 0.0),
+            "p95_latency": latency.get("p95_s", 0.0),
+            "peak_rss": memory.get("peak_rss_mb", 0.0),
+            "total_tokens": tokens.get("total", 0),
+            "total_cost": cost.get("total_usd", 0.0),
+        }
+        db_manager.insert_run(run_data)
+    except Exception as e:
+        logger.error(f"Failed to log run metadata to SQLite database: {e}")
     logger.info(f"\n  ── Results: {pipeline_name} on {domain} ──")
     logger.info(f"  Questions: {summary['n']}")
     logger.info(f"  Success rate: {summary.get('success_rate', 0):.1%}")

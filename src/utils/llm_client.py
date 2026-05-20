@@ -139,7 +139,7 @@ class LLMClient:
     """
 
     def __init__(self, model: str = "llama3.2", temperature: float = 0.0,
-                 max_tokens: int = 4096, timeout: int = 120,
+                 max_tokens: int = 4096, timeout: int = 300,
                  provider: str = None):
         self.model = model
         self.temperature = temperature

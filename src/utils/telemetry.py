@@ -27,6 +27,7 @@ class QueryTelemetry:
     question: str
     pipeline_name: str
     domain: str
+    run_id: str | None = None
 
     # Answer & context
     answer: str = ""
@@ -55,6 +56,11 @@ class QueryTelemetry:
     error_type: str = ""  # retrieval_failure, reasoning_failure, hallucination, format_failure, none
     success: bool = True
 
+    # Evaluated scores
+    faithfulness_score: float | None = None
+    f1_score: float | None = None
+    em_score: float | None = None
+
     def to_dict(self) -> dict:
         d = asdict(self)
         d["retrieved_contexts"] = len(self.retrieved_contexts)
@@ -73,9 +79,10 @@ class TelemetryTracker:
         tracker.save("results/telemetry_bm25_finance.jsonl")
     """
 
-    def __init__(self, pipeline_name: str, domain: str):
+    def __init__(self, pipeline_name: str, domain: str, run_id: str | None = None):
         self.pipeline_name = pipeline_name
         self.domain = domain
+        self.run_id = run_id
         self.records: list[QueryTelemetry] = []
         self._process = psutil.Process()
 
@@ -177,6 +184,7 @@ class QueryContext:
             question=question,
             pipeline_name=tracker.pipeline_name,
             domain=tracker.domain,
+            run_id=tracker.run_id,
             reference_answer=reference_answer,
             question_type=question_type,
         )
@@ -199,7 +207,47 @@ class QueryContext:
             self._record.success = False
             self._record.error_type = "format_failure" if "JSON" in str(exc_val) else "reasoning_failure"
 
+        # Compute string metrics
+        if self._record.success and self._record.answer and self._record.reference_answer:
+            try:
+                from src.evaluation.string_metrics import exact_match, token_f1
+                self._record.em_score = exact_match(self._record.answer, self._record.reference_answer)
+                f1_res = token_f1(self._record.answer, self._record.reference_answer)
+                self._record.f1_score = f1_res.get("f1", 0.0)
+            except Exception as e:
+                logger.error(f"Failed to calculate F1/EM metrics: {e}")
+
         self._tracker.add_record(self._record)
+
+        # Log query to SQLite
+        try:
+            from src.utils.database import db_manager
+            query_data = {
+                "run_id": self._record.run_id,
+                "question": self._record.question,
+                "pipeline_name": self._record.pipeline_name,
+                "domain": self._record.domain,
+                "answer": self._record.answer,
+                "retrieved_contexts": self._record.retrieved_contexts,
+                "reference_answer": self._record.reference_answer,
+                "question_type": self._record.question_type,
+                "latency": self._record.total_latency_s,
+                "mem_delta": self._record.mem_delta_mb,
+                "mem_peak": self._record.mem_peak_mb,
+                "input_tokens": self._record.input_tokens,
+                "output_tokens": self._record.output_tokens,
+                "total_tokens": self._record.total_tokens,
+                "cost": self._record.cost_usd,
+                "error_type": self._record.error_type,
+                "success": self._record.success,
+                "faithfulness_score": self._record.faithfulness_score,
+                "f1_score": self._record.f1_score,
+                "em_score": self._record.em_score,
+            }
+            db_manager.insert_query(query_data)
+        except Exception as e:
+            logger.error(f"Error logging query to SQLite: {e}")
+
         return False  # Don't suppress exceptions
 
     def set_result(self, rag_response):
