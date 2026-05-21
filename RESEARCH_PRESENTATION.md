@@ -16,8 +16,11 @@ This research introduces a local, zero-cost, high-fidelity research platform des
 
 ## 🗺️ End-to-End System Mind Map & Flow Diagram
 
-The following Mermaid diagram maps the entire research platform from its initial conception to its system architecture, multi-agent debate workflow, and final empirical evaluations.
+Here is the premium high-resolution mind map of the full project lifecycle, followed by the raw Mermaid syntax:
 
+![Vectorless RAG Telemetry Platform Flowchart](vectorless_rag_mindmap.jpg)
+
+### Mermaid Workflow Sequence
 ```mermaid
 graph TD
     %% Conception Layer
