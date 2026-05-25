@@ -14,3 +14,5 @@
 ## Key Finding
 Hybrid BM25+LLM: RAGAS=0.87, wins on quality
 BM25 alone: RAGAS=0.71, zero embedding cost
+
+# ts:2026-05-25T10:30:00
