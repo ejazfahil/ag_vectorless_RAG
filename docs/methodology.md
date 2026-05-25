@@ -1,4 +1,4 @@
-# Benchmark Methodology — 2026-06-01
+# Benchmark Methodology — 2026-05-25
 
 ## Retrieval Backends Compared
 1. BM25 (Okapi) — sparse keyword
@@ -14,5 +14,3 @@
 ## Key Finding
 Hybrid BM25+LLM: RAGAS=0.87, wins on quality
 BM25 alone: RAGAS=0.71, zero embedding cost
-
-# ts:2026-06-01T15:15:00
