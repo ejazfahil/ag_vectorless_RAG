@@ -1,1 +1,1 @@
-# Vectorless RAG Benchmark — Source Package
+# src package
