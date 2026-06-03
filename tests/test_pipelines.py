@@ -3,7 +3,8 @@ Basic tests for pipeline base classes and utilities.
 """
 
 import pytest
-from src.pipelines.base import RAGResponse, RAGPipeline, IngestionReport, UpdateReport
+
+from src.pipelines.base import RAGPipeline, RAGResponse
 from src.utils.token_counter import TokenCounter
 
 

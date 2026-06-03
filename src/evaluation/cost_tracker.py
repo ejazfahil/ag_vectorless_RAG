@@ -4,14 +4,10 @@ Cost Tracker — tracks token usage and USD cost per query across pipelines.
 
 from __future__ import annotations
 
-
 import json
-import time
-from pathlib import Path
 from dataclasses import dataclass, field
-from loguru import logger
-from src.pipelines.base import RAGResponse
 
+from src.pipelines.base import RAGResponse
 
 MODEL_PRICING_PER_1M = {
     "gpt-4o": {"input": 2.50, "output": 10.00},

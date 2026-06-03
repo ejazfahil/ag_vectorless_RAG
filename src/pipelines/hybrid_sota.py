@@ -11,7 +11,6 @@ Novel hybrid that combines the best of all paradigms:
 
 from __future__ import annotations
 
-
 import json
 import time
 from pathlib import Path
@@ -20,12 +19,13 @@ from typing import Any
 from loguru import logger
 
 from src.pipelines.base import (
-    RAGPipeline, RAGResponse, IngestionReport, UpdateReport,
+    IngestionReport,
+    RAGPipeline,
+    RAGResponse,
+    UpdateReport,
 )
-from src.pipelines.pageindex_rag import PageIndexRAG
-from src.pipelines.bm25_rag import BM25RAG, InMemoryBM25
+from src.pipelines.bm25_rag import InMemoryBM25
 from src.utils.llm_client import LLMClient
-
 
 ROUTER_PROMPT = """Classify this query into exactly one retrieval strategy.
 

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from __future__ import annotations
+
 """
 Main benchmark runner — entry point for the Vectorless RAG Benchmark.
 
@@ -13,8 +14,9 @@ Usage:
 import argparse
 import json
 import sys
-import yaml
 from pathlib import Path
+
+import yaml
 from loguru import logger
 
 # Add project root to path
@@ -33,12 +35,12 @@ def load_config(config_path: str = "configs/base.yaml") -> dict:
 
 def get_pipelines(pipeline_filter: str | None = None):
     """Instantiate all (or filtered) RAG pipelines."""
+    from src.pipelines.agentic_rag import AgenticRAG
+    from src.pipelines.bm25_rag import BM25RAG
+    from src.pipelines.embedding_free_rag import EmbeddingFreeRAG
+    from src.pipelines.hybrid_sota import HybridSoTARAG
     from src.pipelines.pageindex_rag import PageIndexRAG
     from src.pipelines.roaming_rag import RoamingRAG
-    from src.pipelines.bm25_rag import BM25RAG
-    from src.pipelines.agentic_rag import AgenticRAG
-    from src.pipelines.hybrid_sota import HybridSoTARAG
-    from src.pipelines.embedding_free_rag import EmbeddingFreeRAG
     from src.pipelines.three_stage_hybrid import ThreeStageHybridRAG
 
     PIPELINE_CLASSES = {
@@ -136,8 +138,9 @@ def run_benchmark(
 
     # Log skeleton run to SQLite database to satisfy FOREIGN KEY constraint for queries
     try:
-        from src.utils.database import db_manager
         from datetime import datetime
+
+        from src.utils.database import db_manager
         skeleton_run = {
             "id": run_id,
             "timestamp": datetime.utcnow().isoformat(),
@@ -174,8 +177,9 @@ def run_benchmark(
 
     # Log run metadata to SQLite database
     try:
-        from src.utils.database import db_manager
         from datetime import datetime
+
+        from src.utils.database import db_manager
 
         latency = summary.get("latency", {})
         memory = summary.get("memory", {})

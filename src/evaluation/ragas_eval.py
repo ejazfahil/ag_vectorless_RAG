@@ -5,10 +5,9 @@ on faithfulness, answer relevancy, context precision, and context recall.
 
 from __future__ import annotations
 
-
 import json
-from pathlib import Path
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any
 
 from loguru import logger
@@ -84,14 +83,14 @@ class RAGASEvaluator:
         )
 
         try:
+            from datasets import Dataset
             from ragas import evaluate as ragas_evaluate
             from ragas.metrics import (
-                faithfulness,
                 answer_relevancy,
                 context_precision,
                 context_recall,
+                faithfulness,
             )
-            from datasets import Dataset
 
             # Prepare dataset in RAGAS format
             eval_data = {
@@ -172,7 +171,8 @@ class RAGASEvaluator:
             matcher = SequenceMatcher(None, answer, ground_truth)
             relevancy_scores.append(matcher.ratio())
 
-        avg = lambda lst: sum(lst) / len(lst) if lst else 0.0
+        def avg(lst):
+            return sum(lst) / len(lst) if lst else 0.0
 
         return {
             "faithfulness": avg(faithfulness_scores),

@@ -8,15 +8,14 @@ Logs full transcripts, queries, contexts, and grounding scores to the shared SQL
 
 from __future__ import annotations
 
-import os
-import sys
-import yaml
-import uuid
+import argparse
 import json
 import re
 import sqlite3
-import argparse
+import sys
 from pathlib import Path
+
+import yaml
 from loguru import logger
 
 # Add project root to path
@@ -24,10 +23,10 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.utils.llm_client import LLMClient
 from src.pipelines.bm25_rag import BM25RAG
-from src.pipelines.pageindex_rag import PageIndexRAG
 from src.pipelines.embedding_free_rag import EmbeddingFreeRAG
+from src.pipelines.pageindex_rag import PageIndexRAG
+from src.utils.llm_client import LLMClient
 
 # Graceful DB logging integration with the DB engineer's DatabaseManager
 try:
@@ -174,7 +173,7 @@ Return ONLY the valid JSON object. No other text."""
 Domain of Today's Trial: {self.domain.upper()}
 Topic under Debate: '{self.topic}'
 
-Deliver a majestic, formal courtroom address to call the court to order. 
+Deliver a majestic, formal courtroom address to call the court to order.
 Introduce the topic, outline the rules of this debate, and present the three RAG advocates who will compete:
 1. BM25 Lexical RAG (Lexical/Keyword paradigm)
 2. PageIndex RAG (Hierarchical tree navigation paradigm)
@@ -323,7 +322,7 @@ Formulate a highly persuasive, factual, and premium opening statement.
 Begin your speech immediately:"""
         elif turn_num == 2:
             prompt = f"""You are the {paradigm.upper()} RAG Advocate. The topic is '{self.topic}'.
-            
+
 History of debate so far:
 {history}
 
@@ -342,7 +341,7 @@ Formulate a sharp, fact-based Rebuttal.
 Begin your speech immediately:"""
         else:
             prompt = f"""You are the {paradigm.upper()} RAG Advocate. The topic is '{self.topic}'.
-            
+
 History of debate so far:
 {history}
 

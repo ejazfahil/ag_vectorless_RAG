@@ -74,6 +74,12 @@ target-version = "py311"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "W"]
+# Pragmatic ignores for a research/Streamlit codebase:
+#   E501 - long lines (data-heavy seed dicts and prompt strings)
+#   E402 - imports after the sys.path bootstrap (required for `src.` imports)
+#   E701 - `if cond: continue` guards in tight ingestion loops
+#   E741 - single-letter loop vars in numeric/plotting code
+ignore = ["E501", "E402", "E701", "E741"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

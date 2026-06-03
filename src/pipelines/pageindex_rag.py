@@ -10,7 +10,6 @@ Reference: https://github.com/VectifyAI/PageIndex
 
 from __future__ import annotations
 
-
 import json
 import os
 import time
@@ -20,10 +19,12 @@ from typing import Any
 from loguru import logger
 
 from src.pipelines.base import (
-    RAGPipeline, RAGResponse, IngestionReport, UpdateReport,
+    IngestionReport,
+    RAGPipeline,
+    RAGResponse,
+    UpdateReport,
 )
 from src.utils.llm_client import LLMClient
-
 
 # ── Prompts ─────────────────────────────────────────────────────────
 

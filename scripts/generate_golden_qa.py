@@ -13,12 +13,11 @@ Usage:
 from __future__ import annotations
 
 import argparse
-import json
 import hashlib
+import json
 import re
 import sys
 from pathlib import Path
-from typing import Any
 
 PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
@@ -88,7 +87,7 @@ def generate_from_document_structure(
     doc_id = doc_data.get("doc_id", "unknown")
     title = doc_data.get("title", "Unknown Document")
     sections = doc_data.get("sections", [])
-    full_text = doc_data.get("full_text", "")
+    doc_data.get("full_text", "")
 
     # Extract facts from section titles and content
     for i, section in enumerate(sections):
@@ -212,7 +211,7 @@ def generate_technical_qa(doc_data: dict) -> list[dict]:
     """Generate Q&A for technical documentation."""
     qa_pairs = []
     doc_id = doc_data.get("doc_id", "unknown")
-    title = doc_data.get("title", "Unknown")
+    doc_data.get("title", "Unknown")
     sections = doc_data.get("sections", [])
 
     # Technical-specific templates

@@ -11,11 +11,8 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import sys
 import urllib.request
-import zipfile
-import shutil
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).parent.parent
@@ -58,11 +55,6 @@ def download_financebench():
 
     # 3. Download sample SEC filing PDFs for actual RAG testing
     # These are publicly available from SEC EDGAR
-    sample_filings = {
-        "AAPL_10K_2023.txt": "https://raw.githubusercontent.com/patronus-ai/financebench/main/data/docs/AAPL_2023_10K.txt",
-        "AMZN_10K_2023.txt": "https://raw.githubusercontent.com/patronus-ai/financebench/main/data/docs/AMZN_2023_10K.txt",
-        "MSFT_10K_2023.txt": "https://raw.githubusercontent.com/patronus-ai/financebench/main/data/docs/MSFT_2023_10K.txt",
-    }
 
     # Try to get file list from the repo
     docs_index_url = "https://api.github.com/repos/patronus-ai/financebench/contents/data"
@@ -125,10 +117,10 @@ def _create_finance_docs_from_qa(finance_dir: Path):
                 for i, entry in enumerate(entries):
                     evidence = entry.get("evidence", entry.get("evidence_text", ""))
                     question = entry.get("question", "")
-                    answer = entry.get("answer", "")
+                    entry.get("answer", "")
                     f.write(f"## Section {i+1}: {question[:80]}\n\n")
                     f.write(f"{evidence}\n\n")
-                    f.write(f"---\n\n")
+                    f.write("---\n\n")
 
             print(f"  ✓ Created: {doc_path.name} ({len(entries)} sections)")
 

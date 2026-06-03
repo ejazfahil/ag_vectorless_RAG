@@ -7,13 +7,13 @@ Provider priority: Ollama (free) > Gemini (free tier) > OpenAI > Anthropic
 
 from __future__ import annotations
 
-import os
 import json
+import os
 import time
-import urllib.request
 import urllib.error
-from typing import Any
+import urllib.request
 from dataclasses import dataclass
+from typing import Any
 
 from dotenv import load_dotenv
 from loguru import logger

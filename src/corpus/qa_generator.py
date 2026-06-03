@@ -10,11 +10,10 @@ Generates 3 types of questions per document:
 
 from __future__ import annotations
 
-
 import json
 import random
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from dataclasses import dataclass, field, asdict
 from typing import Any
 
 from loguru import logger

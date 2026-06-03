@@ -9,11 +9,10 @@ Falls back to in-memory BM25 if Elasticsearch is unavailable.
 
 from __future__ import annotations
 
-
 import json
 import math
-import time
 import re
+import time
 from collections import Counter
 from pathlib import Path
 from typing import Any
@@ -21,10 +20,12 @@ from typing import Any
 from loguru import logger
 
 from src.pipelines.base import (
-    RAGPipeline, RAGResponse, IngestionReport, UpdateReport,
+    IngestionReport,
+    RAGPipeline,
+    RAGResponse,
+    UpdateReport,
 )
 from src.utils.llm_client import LLMClient
-
 
 ANSWER_PROMPT = """Answer the question using ONLY the retrieved passages below.
 Cite the source document and section for each claim.

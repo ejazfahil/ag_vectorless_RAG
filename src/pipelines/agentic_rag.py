@@ -8,7 +8,6 @@ vector databases. "RAG without the R."
 
 from __future__ import annotations
 
-
 import json
 import time
 from pathlib import Path
@@ -17,10 +16,12 @@ from typing import Any
 from loguru import logger
 
 from src.pipelines.base import (
-    RAGPipeline, RAGResponse, IngestionReport, UpdateReport,
+    IngestionReport,
+    RAGPipeline,
+    RAGResponse,
+    UpdateReport,
 )
 from src.utils.llm_client import LLMClient
-
 
 DECOMPOSE_PROMPT = """Break this question into simpler sub-questions that can be
 answered independently by searching through documents.

@@ -11,11 +11,10 @@ Tracks:
 from __future__ import annotations
 
 import json
-import time
 import statistics
-from dataclasses import dataclass, field, asdict
+import time
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Any
 
 import psutil
 from loguru import logger

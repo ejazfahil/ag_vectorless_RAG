@@ -5,7 +5,6 @@ and a character-based approximation for Anthropic models.
 
 from __future__ import annotations
 
-
 import tiktoken
 from loguru import logger
 
