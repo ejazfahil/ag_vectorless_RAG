@@ -1,5 +1,7 @@
 # 🚀 Vectorless RAG Benchmark
 
+[![CI](https://github.com/ejazfahil/ag_vectorless_RAG/actions/workflows/ci.yml/badge.svg)](https://github.com/ejazfahil/ag_vectorless_RAG/actions/workflows/ci.yml)
+
 > A **State-of-the-Art Vectorless RAG system** and rigorous benchmark comparing 5 embedding-free retrieval paradigms across 4 evaluation dimensions.
 
 ## 🎯 Overview
