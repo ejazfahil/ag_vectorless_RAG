@@ -13,3 +13,5 @@ class ColBERTBackend:
     def retrieve(self,query:str,top_k=5)->List[Tuple[int,float]]:
         # Stub returns uniform scores
         return [(i,1.0/len(self._docs)) for i in range(min(top_k,len(self._docs) if self._docs else 0))]
+
+# ts:2026-06-09T14:00:00
