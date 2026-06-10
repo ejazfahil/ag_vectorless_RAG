@@ -48,6 +48,22 @@ python -m src.backends.bm25_backend
 python benchmark.py --method all --dataset squad_mini
 ```
 
+### 🐳 Containerised + offline (Docker + local LLM)
+
+The repo ships a multi-stage `Dockerfile` and a `docker-compose.yml` that brings up the
+app alongside **Elasticsearch** (the BM25 / hybrid backend). The LLM client auto-detects
+a local [Ollama](https://ollama.com) server, so the whole benchmark runs **offline with
+no API keys and zero per-token cost** — data never leaves the machine:
+
+```bash
+ollama pull qwen3:8b          # models referenced by the configs (also: llama3.2:3b)
+docker compose up -d --build  # app :8501 (Streamlit) + Elasticsearch :9200
+```
+
+Inside a container the host's Ollama is reached via `OLLAMA_BASE_URL`
+(default `http://localhost:11434`; set to `http://host.docker.internal:11434` in compose
+for macOS). Verified end-to-end against `qwen3:8b`.
+
 ## 📁 Project Structure
 
 ```

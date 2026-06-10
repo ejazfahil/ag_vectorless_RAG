@@ -20,6 +20,11 @@ from loguru import logger
 
 load_dotenv()
 
+# Base URL for the local Ollama server. Defaults to localhost for bare-metal
+# runs; override via OLLAMA_BASE_URL (e.g. http://host.docker.internal:11434)
+# when this app runs in a container and Ollama runs on the host.
+OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434").rstrip("/")
+
 
 @dataclass
 class LLMResponse:
@@ -105,7 +110,7 @@ def detect_best_provider() -> tuple[str, str]:
 def _ollama_available() -> bool:
     """Check if Ollama is running locally."""
     try:
-        req = urllib.request.Request("http://localhost:11434/api/tags")
+        req = urllib.request.Request(f"{OLLAMA_BASE_URL}/api/tags")
         with urllib.request.urlopen(req, timeout=3) as resp:
             return resp.status == 200
     except Exception:
@@ -115,7 +120,7 @@ def _ollama_available() -> bool:
 def _ollama_list_models() -> list[str]:
     """List models available in Ollama."""
     try:
-        req = urllib.request.Request("http://localhost:11434/api/tags")
+        req = urllib.request.Request(f"{OLLAMA_BASE_URL}/api/tags")
         with urllib.request.urlopen(req, timeout=5) as resp:
             data = json.loads(resp.read())
             models = [m["name"] for m in data.get("models", [])]
@@ -253,7 +258,7 @@ class LLMClient:
 
         data = json.dumps(payload).encode("utf-8")
         req = urllib.request.Request(
-            "http://localhost:11434/api/generate",
+            f"{OLLAMA_BASE_URL}/api/generate",
             data=data,
             headers={"Content-Type": "application/json"},
             method="POST",
@@ -264,7 +269,7 @@ class LLMClient:
                 result = json.loads(resp.read())
         except urllib.error.URLError as e:
             raise ConnectionError(
-                f"Ollama not reachable at localhost:11434. "
+                f"Ollama not reachable at {OLLAMA_BASE_URL}. "
                 f"Start it with: ollama serve\nError: {e}"
             )
 
