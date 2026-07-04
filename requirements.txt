@@ -1,0 +1,13 @@
+# Minimal runtime for the LOCAL, free benchmarks (BM25 + closed-book vs Ollama)
+# and the test suite. The heavy pipelines (LangChain/LangGraph/Elasticsearch) and
+# evaluation extras (RAGAS/DeepEval) live in pyproject's optional [full] group:
+#   pip install -e ".[dev,full]"
+#
+# Pinned as compatible-minimums so CI resolves on Python 3.11+.
+numpy>=1.26
+pandas>=2.2
+pyyaml>=6.0
+loguru>=0.7
+python-dotenv>=1.0
+tiktoken>=0.7
+matplotlib>=3.8
