@@ -1,0 +1,40 @@
+{
+  "meta": {
+    "timestamp_utc": "2026-07-05T00:15:42.450159+00:00",
+    "domain": "finance",
+    "n": 20,
+    "seed": 42,
+    "model": "openai/gpt-4o-mini",
+    "python": "3.14.5",
+    "platform": "macOS-27.0-arm64-arm-64bit-Mach-O",
+    "numpy": "2.5.0"
+  },
+  "leaderboard": [
+    {
+      "pipeline": "bm25",
+      "n": 20,
+      "correct": 0.15,
+      "answer_match": 0.1,
+      "f1": 0.1131,
+      "exact_match": 0.0,
+      "p50_latency_ms": 2279.7,
+      "p95_latency_ms": 4858.7,
+      "mean_tokens": 6425.4,
+      "cost_usd": 0.01994,
+      "ingest_s": 0.02
+    },
+    {
+      "pipeline": "closed_book",
+      "n": 20,
+      "correct": 0.05,
+      "answer_match": 0.1,
+      "f1": 0.1115,
+      "exact_match": 0.0,
+      "p50_latency_ms": 1999.4,
+      "p95_latency_ms": 2791.2,
+      "mean_tokens": 154,
+      "cost_usd": 0.001237,
+      "ingest_s": 0.0
+    }
+  ]
+}

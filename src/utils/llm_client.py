@@ -161,6 +161,9 @@ class LLMClient:
             self.provider = "gemini"
         elif model.startswith("gpt") or model.startswith("o1") or model.startswith("o3"):
             self.provider = "openai"
+        elif "/" in model and os.getenv("OPENROUTER_API_KEY"):
+            # OpenRouter model ids look like "openai/gpt-4o", "meta-llama/llama-3.1-70b".
+            self.provider = "openrouter"
         elif model in OLLAMA_MODELS or _ollama_available():
             self.provider = "ollama"
         else:
@@ -179,9 +182,12 @@ class LLMClient:
             pass  # Uses REST API directly
         elif self.provider == "ollama":
             pass  # Uses REST API directly
+        elif self.provider == "openrouter":
+            pass  # OpenAI-compatible REST API, called directly
 
-        # Cost tracking
-        self._pricing = MODEL_PRICING.get(model, {"input": 0.0, "output": 0.0})
+        # Cost tracking (accept "openai/gpt-4o"-style OpenRouter ids too)
+        self._pricing = MODEL_PRICING.get(
+            model, MODEL_PRICING.get(model.split("/")[-1], {"input": 0.0, "output": 0.0}))
         self._total_cost = 0.0
         self._total_tokens = 0
         self._call_count = 0
@@ -204,6 +210,8 @@ class LLMClient:
 
         if self.provider == "ollama":
             response = self._call_ollama(prompt, system_prompt, json_mode)
+        elif self.provider == "openrouter":
+            response = self._call_openrouter(prompt, system_prompt, json_mode)
         elif self.provider == "gemini":
             response = self._call_gemini(prompt, system_prompt, json_mode)
         elif self.provider == "openai":
@@ -236,6 +244,54 @@ class LLMClient:
         )
 
         return response
+
+    # ── OpenRouter (OpenAI-compatible, paid) ────────────────────────
+
+    def _call_openrouter(self, prompt: str, system_prompt: str,
+                         json_mode: bool) -> LLMResponse:
+        """Call OpenRouter's OpenAI-compatible chat API. Needs OPENROUTER_API_KEY."""
+        api_key = os.getenv("OPENROUTER_API_KEY")
+        if not api_key:
+            raise ValueError("Set OPENROUTER_API_KEY to use the openrouter provider.")
+
+        messages = []
+        if system_prompt:
+            messages.append({"role": "system", "content": system_prompt})
+        messages.append({"role": "user", "content": prompt})
+
+        payload = {
+            "model": self.model,
+            "messages": messages,
+            "temperature": self.temperature,
+            "max_tokens": self.max_tokens,
+        }
+        if json_mode:
+            payload["response_format"] = {"type": "json_object"}
+
+        req = urllib.request.Request(
+            "https://openrouter.ai/api/v1/chat/completions",
+            data=json.dumps(payload).encode("utf-8"),
+            headers={"Content-Type": "application/json",
+                     "Authorization": f"Bearer {api_key}"},
+            method="POST",
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=self.timeout) as resp:
+                result = json.loads(resp.read())
+        except urllib.error.HTTPError as e:
+            raise ConnectionError(f"OpenRouter HTTP {e.code}: {e.read()[:200]!r}")
+
+        content = result["choices"][0]["message"]["content"]
+        usage = result.get("usage", {})
+        input_tokens = usage.get("prompt_tokens", len(prompt) // 4)
+        output_tokens = usage.get("completion_tokens", len(content) // 4)
+        return LLMResponse(
+            content=content, model=self.model,
+            input_tokens=input_tokens, output_tokens=output_tokens,
+            total_tokens=input_tokens + output_tokens,
+            cost_usd=0.0,  # filled in by generate() from MODEL_PRICING
+            latency_ms=0.0, raw_response=result,
+        )
 
     # ── Ollama (FREE, LOCAL) ────────────────────────────────────────
 

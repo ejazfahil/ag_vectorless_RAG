@@ -58,7 +58,7 @@ flowchart LR
 
 **Vectorless, by construction.** No pipeline computes dense embeddings for retrieval. Pipelines 1/2/4/5/7 lean on an LLM reasoning over document *structure*; pipeline 3 is pure BM25 term-frequency scoring; pipeline 6 anchors LLM-extracted quotes to sentences via edit distance. The only "index" is a BM25 term index or a cached JSON tree — there is no vector store.
 
-**Local-first LLM client.** `src/utils/llm_client.py` auto-detects a provider with priority **Ollama (free/local) → Gemini (free tier) → OpenAI → Anthropic**, exposes a uniform `generate()` with per-call token + cost accounting, and reads `OLLAMA_BASE_URL` so it works on bare metal or inside a container (`host.docker.internal`). With Ollama, **cost is genuinely $0**.
+**Local-first LLM client.** `src/utils/llm_client.py` auto-detects a provider with priority **Ollama (free/local) → Gemini (free tier) → OpenAI / OpenRouter → Anthropic**, exposes a uniform `generate()` with per-call token + cost accounting, and reads `OLLAMA_BASE_URL` so it works on bare metal or inside a container (`host.docker.internal`). Set `OPENROUTER_API_KEY` and pass an OpenRouter model id (e.g. `openai/gpt-4o-mini`) to benchmark hosted models through the same interface. With Ollama, **cost is genuinely $0**.
 
 **Telemetry.** `src/utils/telemetry.py` wraps each query in a context manager that records wall-clock latency, RSS memory delta, token usage, USD cost, error class, and question type, then writes per-run JSONL + a `.summary.json`, and logs run metadata to a SQLite database (`data/vectorless_rag.db`).
 
@@ -106,7 +106,23 @@ These are **real telemetry summaries** committed under `results/`, from local ru
 - **BM25 is cheap and reliable** but its end-to-end latency here is dominated by the *LLM answer-generation* step on a local model, not by retrieval.
 - Reported latencies reflect a **local Ollama** setup on commodity hardware; they are not directly comparable to hosted-API latencies.
 
-> ⚠️ **On quality metrics:** the RAGAS / LLM-judge scoring code exists (`src/evaluation/`) and is wired into the config, but a full quality leaderboard across all seven pipelines has **not** been run at scale, so no faithfulness/relevancy scores are reported here. Earlier draft documents that quoted specific RAGAS figures were illustrative placeholders and have been removed to avoid fabricated results.
+### Answer quality — first measured leaderboard
+
+A dedicated correctness runner (`scripts/quality_benchmark.py`) scores answers against the golden set with **token-F1**, **exact-match**, and a **numeric-aware match** (fair for financial figures), and adds a no-retrieval **closed-book control** to isolate the value of retrieval. The numbers below are a real run committed under `results/quality_*`.
+
+**Finance · N=20 (seed 42) · `openai/gpt-4o-mini` via OpenRouter**
+
+| Pipeline | Correct (numeric-aware) | Token F1 | p50 latency | Mean tokens | Cost |
+|----------|-------------------------|----------|-------------|-------------|------|
+| **BM25 RAG** | **0.15** | 0.11 | 2.3 s | 6,425 | $0.020 |
+| Closed-book (no retrieval) | 0.05 | 0.11 | 2.0 s | 154 | $0.001 |
+
+![Answer quality](results/plots/quality.png)
+![Query latency](results/plots/latency.png)
+
+**Reading this honestly:** BM25 retrieval reaches **3× the closed-book correctness** (0.15 vs 0.05) on FinanceBench-style numeric QA — directional evidence that lexical retrieval helps the model ground its answers. Caveats that keep it defensible: **N=20 is a small sample**; `gpt-4o-mini` is mid-tier (a frontier model would score higher); a few golden answers in this slice are imperfectly formatted; and absolute scores are low because FinanceBench requires reading financial tables. The identical command runs **free on local Ollama** — where a 3B model scores near-zero, i.e. *model capacity*, not the pipeline, is the bottleneck there — or against any OpenAI-compatible provider. Scale `--n` / `--full` and swap `--model` to extend the leaderboard.
+
+> ⚠️ **Still to do:** the RAGAS / LLM-judge faithfulness+relevancy scoring (`src/evaluation/`) and a full 7-pipeline × 3-domain quality leaderboard have **not** been run at scale — no such scores are reported until they are. Earlier draft documents that quoted specific RAGAS figures were illustrative placeholders and were removed to avoid fabricated results.
 
 ## 🚀 Getting Started
 
@@ -129,6 +145,21 @@ python scripts/run_benchmark.py --domain all
 ```
 
 Results land in `results/` as `<pipeline>_<domain>_telemetry.jsonl` + `.summary.json`, with a combined `benchmark_summary.json`.
+
+### Answer-quality benchmark (correctness + closed-book control)
+
+```bash
+pip install -r requirements.txt        # light runtime; BM25 needs no LangChain/Elasticsearch
+
+# Free & local (Ollama):
+python -m scripts.quality_benchmark --pipelines bm25,closed_book --n 20 --seed 42 --model llama3.2:3b
+
+# Any OpenAI-compatible provider (OpenRouter shown) — real numbers, your key, never committed:
+OPENROUTER_API_KEY=sk-or-... python -m scripts.quality_benchmark \
+    --pipelines bm25,closed_book --n 20 --seed 42 --model openai/gpt-4o-mini
+```
+
+Writes `results/quality_leaderboard.csv`, `quality_summary.json`, per-question JSONL, and plots under `results/plots/`.
 
 ### 🐳 Containerised + offline (Docker + Elasticsearch + local LLM)
 

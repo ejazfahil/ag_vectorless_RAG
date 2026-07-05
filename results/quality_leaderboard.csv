@@ -1,0 +1,3 @@
+pipeline,n,correct,answer_match,f1,exact_match,p50_latency_ms,p95_latency_ms,mean_tokens,cost_usd,ingest_s
+bm25,20,0.15,0.1,0.1131,0.0,2279.7,4858.7,6425.4,0.01994,0.02
+closed_book,20,0.05,0.1,0.1115,0.0,1999.4,2791.2,154,0.001237,0.0
